@@ -1,4 +1,4 @@
-// src/pages/VendeurDashboard.jsx - VERSION CORRIGÉE avec modification complète
+// src/pages/VendeurDashboard.jsx - VERSION FRANÇAISE AMÉLIORÉE
 import { useState } from 'react';
 import { Button, Alert } from '../components/ui';
 import { PlusIcon } from '../components/icons';
@@ -16,7 +16,7 @@ function VendeurDashboard() {
     products,
     loading,
     error,
-    editProduct, // ✅ Garde pour les modifications simples si besoin
+    editProduct,
     removeProduct,
     filterProducts,
     clearError,
@@ -27,7 +27,7 @@ function VendeurDashboard() {
     loading: extendedLoading,
     error: extendedError,
     createProductWithDetails,
-    updateProductWithDetails, // ✅ NOUVELLE FONCTION
+    updateProductWithDetails,
     clearError: clearExtendedError
   } = useProductsExtended();
 
@@ -56,27 +56,21 @@ function VendeurDashboard() {
     openDetails();
   };
 
-  // ✅ FONCTION CORRIGÉE pour gérer création ET modification complète
   const handleFormSubmit = async (formData) => {
     try {
       console.log('📝 Soumission formulaire avec données:', formData);
       
       if (editingProduct) {
-        // ✅ MODE ÉDITION - Utiliser la nouvelle fonction complète
         console.log('🔄 Mode modification pour produit ID:', editingProduct.id);
         await updateProductWithDetails(editingProduct.id, formData);
         console.log('✅ Modification terminée avec succès');
       } else {
-        // ✅ MODE CRÉATION - Utiliser la fonction de création
         console.log('🆕 Mode création avec méthode complète');
         await createProductWithDetails(formData);
         console.log('✅ Création terminée avec succès');
       }
       
-      // Recharger la liste des produits pour voir les changements
       await loadProducts();
-      
-      // Fermer le formulaire et nettoyer
       closeForm();
       setEditingProduct(null);
       
@@ -110,6 +104,19 @@ function VendeurDashboard() {
   const currentError = error || extendedError;
   const isLoading = loading || extendedLoading;
 
+  // Statistiques pour l'affichage
+  const inStockCount = filteredProducts.filter(p => 
+    p.specifications?.some(s => s.quantite_stock > 0)
+  ).length;
+  
+  const outOfStockCount = filteredProducts.filter(p => 
+    p.specifications?.every(s => s.quantite_stock === 0)
+  ).length;
+
+  const lowStockCount = filteredProducts.filter(p => 
+    p.specifications?.some(s => s.quantite_stock <= 5 && s.quantite_stock > 0)
+  ).length;
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -130,7 +137,7 @@ function VendeurDashboard() {
         borderRadius: theme.borderRadius.lg,
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
-        {/* En-tête */}
+        {/* ✅ EN-TÊTE AMÉLIORÉ EN FRANÇAIS */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -143,62 +150,95 @@ function VendeurDashboard() {
             <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: theme.spacing.sm,
-              marginBottom: theme.spacing.sm
+              gap: theme.spacing.md,
+              marginBottom: theme.spacing.md
             }}>
-              <span style={{ fontSize: '24px' }}>📦</span>
-              <h1 style={{ 
-                fontSize: '28px', 
-                fontWeight: '700', 
-                color: theme.colors.gray[800],
-                margin: 0
+              <div style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                padding: theme.spacing.md,
+                borderRadius: theme.borderRadius.lg,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
               }}>
-                All Products
-              </h1>
-            </div>
-            
-            <div style={{ 
-              fontSize: '14px', 
-              color: theme.colors.gray[500],
-              display: 'flex',
-              alignItems: 'center',
-              gap: theme.spacing.sm
-            }}>
-              <span style={{ 
-                color: '#4f46e5', 
-                fontWeight: '500',
-                textDecoration: 'none',
-                cursor: 'pointer'
-              }}>
-                Dashboard
-              </span>
-              <span>→</span>
-              <span>All Products</span>
+                <span style={{ fontSize: '24px', filter: 'brightness(0) invert(1)' }}>📦</span>
+              </div>
+              <div>
+                <h1 style={{ 
+                  fontSize: '32px', 
+                  fontWeight: '700', 
+                  color: theme.colors.gray[800],
+                  margin: 0,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  Tous les Produits
+                </h1>
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: theme.colors.gray[500],
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: theme.spacing.sm,
+                  marginTop: theme.spacing.sm
+                }}>
+                  <span style={{ 
+                    color: '#4f46e5', 
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    textDecoration: 'none'
+                  }}>
+                    Tableau de bord
+                  </span>
+                  <span>→</span>
+                  <span>Tous les produits</span>
+                </div>
+              </div>
             </div>
           </div>
 
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: theme.spacing.md
+            gap: theme.spacing.lg
           }}>
             <ProductSearch
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search for products..."
+              placeholder="Rechercher des produits..."
             />
             
+            {/* ✅ BOUTON AJOUTER AMÉLIORÉ */}
             <Button 
               onClick={handleAddProduct} 
               disabled={isLoading}
               style={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 border: 'none',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+                padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+                fontSize: '15px',
+                fontWeight: '600',
+                borderRadius: theme.borderRadius.lg,
+                transition: 'all 0.3s ease',
+                transform: 'translateY(0)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
               }}
             >
-              <PlusIcon />
-              Add Product
+              <PlusIcon size={18} />
+              Ajouter un Produit
             </Button>
           </div>
         </div>
@@ -216,7 +256,6 @@ function VendeurDashboard() {
           </Alert>
         )}
 
-        {/* ✅ INDICATEUR DE CHARGEMENT pendant modification */}
         {isLoading && (
           <Alert type="warning">
             {editingProduct ? 
@@ -226,87 +265,146 @@ function VendeurDashboard() {
           </Alert>
         )}
 
-        {/* Barre de filtres */}
+        {/* ✅ BARRE DE FILTRES AMÉLIORÉE EN FRANÇAIS */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: theme.spacing.xl,
-          padding: theme.spacing.lg,
-          backgroundColor: '#f8fafc',
+          padding: theme.spacing.xl,
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
           borderRadius: theme.borderRadius.lg,
-          border: `1px solid ${theme.colors.gray[200]}`
+          border: `1px solid ${theme.colors.gray[200]}`,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.md }}>
-            <Button 
-              size="sm"
-              style={{
-                backgroundColor: '#4f46e5',
-                color: theme.colors.white,
-                border: 'none'
-              }}
-            >
-              All Products
-            </Button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.lg }}>
+            {/* ✅ BOUTON TOUS LES PRODUITS AMÉLIORÉ */}
+            <div style={{
+              background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              padding: `${theme.spacing.sm} ${theme.spacing.lg}`,
+              borderRadius: theme.borderRadius.lg,
+              color: theme.colors.white,
+              fontWeight: '600',
+              fontSize: '14px',
+              boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: theme.spacing.sm
+            }}>
+              <span>📦</span>
+              Tous les Produits
+            </div>
             
             <select style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
               border: `1px solid ${theme.colors.gray[300]}`,
-              borderRadius: theme.borderRadius.md,
+              borderRadius: theme.borderRadius.lg,
               fontSize: '14px',
               color: theme.colors.gray[600],
               outline: 'none',
-              backgroundColor: theme.colors.white
+              backgroundColor: theme.colors.white,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              cursor: 'pointer',
+              minWidth: '140px'
             }}>
-              <option>Sort by</option>
-              <option>Name</option>
+              <option>Trier par</option>
+              <option>Nom</option>
               <option>Date</option>
-              <option>Price</option>
+              <option>Prix</option>
               <option>Stock</option>
             </select>
 
             <select style={{
-              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              padding: `${theme.spacing.md} ${theme.spacing.lg}`,
               border: `1px solid ${theme.colors.gray[300]}`,
-              borderRadius: theme.borderRadius.md,
+              borderRadius: theme.borderRadius.lg,
               fontSize: '14px',
               color: theme.colors.gray[600],
               outline: 'none',
-              backgroundColor: theme.colors.white
+              backgroundColor: theme.colors.white,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+              cursor: 'pointer',
+              minWidth: '160px'
             }}>
-              <option>Filter by Category</option>
-              <option>Electronics</option>
-              <option>Clothing</option>
-              <option>Books</option>
+              <option>Filtrer par catégorie</option>
+              <option>Électronique</option>
+              <option>Vêtements</option>
+              <option>Livres</option>
+              <option>Maison</option>
             </select>
           </div>
 
+          {/* ✅ STATISTIQUES AMÉLIORÉES EN FRANÇAIS */}
           <div style={{ 
             display: 'flex', 
             alignItems: 'center', 
-            gap: theme.spacing.lg,
-            fontSize: '14px',
-            color: theme.colors.gray[500]
+            gap: theme.spacing.xl,
+            fontSize: '14px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <span style={{ fontWeight: '600', color: theme.colors.gray[800] }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: theme.spacing.sm,
+              padding: `${theme.spacing.sm} ${theme.spacing.md}`,
+              backgroundColor: theme.colors.white,
+              borderRadius: theme.borderRadius.md,
+              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}>
+              <span style={{ fontWeight: '700', color: theme.colors.gray[800], fontSize: '16px' }}>
                 {filteredProducts.length}
               </span>
-              <span>Results on grid</span>
+              <span style={{ color: theme.colors.gray[500] }}>Résultats</span>
             </div>
             
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: theme.spacing.md,
-              fontSize: '12px' 
+              gap: theme.spacing.lg,
+              fontSize: '13px' 
             }}>
-              <span style={{ color: '#10b981' }}>
-                📦 {filteredProducts.filter(p => p.specifications?.some(s => s.quantite_stock > 0)).length} In Stock
-              </span>
-              <span style={{ color: '#ef4444' }}>
-                🚫 {filteredProducts.filter(p => p.specifications?.every(s => s.quantite_stock === 0)).length} Out of Stock
-              </span>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: theme.spacing.xs,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                backgroundColor: '#dcfce7',
+                borderRadius: theme.borderRadius.sm,
+                color: '#16a34a',
+                fontWeight: '500'
+              }}>
+                <span>🟢</span>
+                <span>{inStockCount} En stock</span>
+              </div>
+              
+              {lowStockCount > 0 && (
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: theme.spacing.xs,
+                  padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                  backgroundColor: '#fef3c7',
+                  borderRadius: theme.borderRadius.sm,
+                  color: '#d97706',
+                  fontWeight: '500'
+                }}>
+                  <span>🟡</span>
+                  <span>{lowStockCount} Stock faible</span>
+                </div>
+              )}
+              
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: theme.spacing.xs,
+                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                backgroundColor: '#fecaca',
+                borderRadius: theme.borderRadius.sm,
+                color: '#dc2626',
+                fontWeight: '500'
+              }}>
+                <span>🔴</span>
+                <span>{outOfStockCount} Rupture</span>
+              </div>
             </div>
           </div>
         </div>
@@ -326,7 +424,7 @@ function VendeurDashboard() {
               ⏳
             </div>
             <div style={{ fontSize: '18px', fontWeight: '500' }}>
-              Loading products...
+              Chargement des produits...
             </div>
           </div>
         ) : (
@@ -350,7 +448,7 @@ function VendeurDashboard() {
                 gridColumn: '1 / -1',
                 textAlign: 'center',
                 padding: '80px 20px',
-                backgroundColor: '#f8fafc',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 borderRadius: theme.borderRadius.lg,
                 border: `2px dashed ${theme.colors.gray[300]}`
               }}>
@@ -363,7 +461,7 @@ function VendeurDashboard() {
                   marginBottom: theme.spacing.sm,
                   fontWeight: '600'
                 }}>
-                  {searchTerm ? 'No products found' : 'No products yet'}
+                  {searchTerm ? 'Aucun produit trouvé' : 'Aucun produit'}
                 </h3>
                 <p style={{ 
                   color: theme.colors.gray[500], 
@@ -373,8 +471,8 @@ function VendeurDashboard() {
                   margin: `0 auto ${theme.spacing.xl} auto`
                 }}>
                   {searchTerm 
-                    ? 'Try adjusting your search terms or filters' 
-                    : 'Start by creating your first product with images and specifications'
+                    ? 'Essayez d\'ajuster vos termes de recherche ou filtres' 
+                    : 'Commencez par créer votre premier produit avec images et spécifications'
                   }
                 </p>
                 {!searchTerm && (
@@ -384,11 +482,13 @@ function VendeurDashboard() {
                       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                       border: 'none',
                       boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                      padding: `${theme.spacing.md} ${theme.spacing.xl}`
+                      padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+                      fontSize: '16px',
+                      fontWeight: '600'
                     }}
                   >
                     <PlusIcon />
-                    Create Your First Product
+                    Créer votre Premier Produit
                   </Button>
                 )}
               </div>
@@ -396,12 +496,11 @@ function VendeurDashboard() {
           </div>
         )}
 
-        {/* ✅ FORMULAIRE ÉTENDU avec support modification complète */}
         <ProductFormExtended
           isOpen={isFormOpen}
           onClose={handleCloseForm}
           onSubmit={handleFormSubmit}
-          initialData={editingProduct} // ✅ Passe toutes les données du produit
+          initialData={editingProduct}
           isLoading={isLoading}
         />
 
