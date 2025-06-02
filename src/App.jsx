@@ -1,36 +1,39 @@
-// import VendeurDashboard from './pages/VendeurDashboard'
-
-// export default function App() {
-//   return <VendeurDashboard />
-// }
-
-// src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
+// import OrderEdit from './pages/orders/OrderEdit';  // adapte le chemin selon ton arborescence
+import VendeurDashboard from './pages/VendeurDashboard';
 import DashboardStock from './pages/stock/DashboardStock';
 import HistoriqueMouvements from './pages/stock/HistoriqueMouvements';
 import RapportStock from './pages/stock/RapportStock';
-import Notifications from './pages/stock/NotificationsStock.jsx';
+import Notifications from './pages/stock/NotificationsStock';
 
-
-// dans <Routes>
+// import OrdersList from './pages/orders/OrdersList';
+// import OrderDetails from './pages/orders/OrderDetails';
 
 function App() {
   return (
     <Router>
       <Routes>
-        
-        <Route path="/" element={<Navigate to="/stock" replace />} />
+        {/* Default Redirect */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        {/* Dashboard Main */}
+        <Route path="/dashboard" element={<VendeurDashboard />} />
+
+        {/* Stock Pages */}
         <Route path="/stock" element={<DashboardStock />} />
         <Route path="/stock/historique" element={<HistoriqueMouvements />} />
         <Route path="/stock/rapport" element={<RapportStock />} />
         <Route path="/stock/notifications" element={<Notifications />} />
 
+        {/* 🧾 Orders Pages */}
+        {/* <Route path="/commandes" element={<OrdersList />} /> */}
+        {/* <Route path="/commandes/:id" element={<OrderDetails />} /> */}
+        <Route path="/products" element={< VendeurDashboard/>} />
+         {/* <Route path="/orders/edit/:id" element={<OrderEdit />} /> */}
       </Routes>
     </Router>
   );
 }
 
 export default App;
-
