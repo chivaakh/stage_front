@@ -5,7 +5,16 @@ import { theme } from '../../styles/theme';
 const Sidebar = ({ onAddProductClick }) => {
   const menuItems = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard', active: false },
-    { id: 'orders', icon: '🛒', label: 'Commandes', active: false },
+    { id: 'orders', 
+      icon: '🛒', 
+      label: 'Commandes', 
+      active: true,
+      submenu:[
+        {id: 'all-commands', labal: 'Tous les commandes', active:true},
+        // {id: 'add-product', label: 'Ajouter une commande', onClick: }
+      ]
+
+    },
     { 
       id: 'products', 
       icon: '📦', 
