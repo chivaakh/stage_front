@@ -27,15 +27,10 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     "postcss": "^8.5.3",
-=======
-    "postcss": "^8.5.4",
->>>>>>> 1b3b1fce7701292b9a7a72c48522fa2ab25d2ce2
-=======
-    "postcss": "^8.5.3",
->>>>>>> f2397a9bf50d13b42b86c1002056409bf0c2d3c8
+
+
     "tailwindcss": "^3.4.17",
     "vite": "^6.3.5"
   }

@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { theme } from '../../styles/theme';
-import { useNavigate } from 'react-router-dom';
 
 
 
-<<<<<<< HEAD
-const ModernSidebar = ({ onAddProductClick, currentPage = 'products' }) => {
-  const [expandedMenus, setExpandedMenus] = useState({ products: true, orders: false });
-=======
+
 const ModernSidebar = ({ children, onAddProductClick, currentPage = 'products' }) => {
   const [expandedMenus, setExpandedMenus] = useState({ products: true, orders: false });
-  const navigate = useNavigate();
->>>>>>> 1b3b1fce7701292b9a7a72c48522fa2ab25d2ce2
+
 
   const toggleMenu = (menuId) => {
     setExpandedMenus(prev => ({
@@ -30,7 +25,6 @@ const navigate = useNavigate();
       onClick: () => navigate('/dashboard')
     },
     {
-<<<<<<< HEAD
   id: 'orders',
   icon: '🧾',
   label: 'Orders',
@@ -38,28 +32,13 @@ const navigate = useNavigate();
   expandable: true, 
   expanded: expandedMenus.orders, 
   submenu: [
-    {
-      id: 'all-orders',
-      label: 'All Orders',
-      active: currentPage === 'all-orders',
-      onClick: () => navigate('/commandes') 
-=======
-      id: 'orders',
-      icon: '🧾',
-      label: 'Orders',
-      active: currentPage === 'orders',
-      expandable: true,
-      expanded: expandedMenus.orders,
-      submenu: [
-        {
+     {
           id: 'all-orders',
           label: 'All Orders',
           active: currentPage === 'all-orders',
           onClick: () => navigate('/commandes')
-        }
-      ]
->>>>>>> 1b3b1fce7701292b9a7a72c48522fa2ab25d2ce2
-    },
+        },
+   
    
   ]
 },
