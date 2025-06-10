@@ -2,6 +2,7 @@
 import React from 'react';
 import { theme } from '../../styles/theme';
 export { default as ImageUpload } from './ImageUpload';
+import './index.css'; 
 
 // Modal Component
 export const Modal = ({ isOpen, onClose, children, maxWidth = '500px' }) => {
