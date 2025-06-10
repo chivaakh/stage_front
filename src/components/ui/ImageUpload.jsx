@@ -1,8 +1,3 @@
-// PROBLÈME IDENTIFIÉ : URL d'image fictive
-// L'URL "https://votre-serveur.com/uploads/..." n'existe pas réellement
-
-// SOLUTION 1 : Corriger ImageUpload.jsx pour utiliser des URLs réelles
-
 // src/components/ui/ImageUpload.jsx - VERSION CORRIGÉE
 import { useState, useRef } from 'react';
 import { Button } from './index';
@@ -37,41 +32,78 @@ const ImageUpload = ({
 }) => {
   const [preview, setPreview] = useState(value || '');
   const [uploadMethod, setUploadMethod] = useState('url');
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleFileSelect = (event) => {
+  // ✅ FONCTION D'UPLOAD RÉEL
+  const uploadFileToServer = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      setIsUploading(true);
+      
+      // ✅ REMPLACEZ cette URL par votre endpoint d'upload Django
+      const response = await fetch('http://localhost:8000/api/upload-image/', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erreur upload: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Image uploadée avec succès:', data);
+      
+      // Retourner l'URL de l'image uploadée
+      return data.url || data.image_url;
+      
+    } catch (error) {
+      console.error('❌ Erreur upload:', error);
+      
+      // ✅ FALLBACK : Créer URL locale temporaire
+      const localUrl = URL.createObjectURL(file);
+      console.log('⚠️ Fallback: Utilisation URL locale:', localUrl);
+      return localUrl;
+      
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        alert('Veuillez sélectionner un fichier image');
-        event.target.value = '';
-        return;
-      }
+    if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Le fichier est trop volumineux (max 5MB)');
-        event.target.value = '';
-        return;
-      }
+    // Validation du fichier
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner un fichier image');
+      event.target.value = '';
+      return;
+    }
 
-      // ✅ CORRECTION : Créer une URL locale pour l'aperçu ET l'utiliser comme URL finale
-      const imageUrl = URL.createObjectURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Le fichier est trop volumineux (max 5MB)');
+      event.target.value = '';
+      return;
+    }
+
+    try {
+      console.log('📤 Upload du fichier:', file.name);
+      
+      // ✅ UPLOAD RÉEL du fichier
+      const imageUrl = await uploadFileToServer(file);
+      
+      // Mettre à jour l'aperçu ET l'URL finale
       setPreview(imageUrl);
+      onChange(imageUrl);
       
-      // ✅ SOLUTION TEMPORAIRE : Utiliser des URLs d'images réelles pour les tests
-      const realImageUrls = [
-        'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=500&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1587831990711-23ca6441447b?w=500&h=500&fit=crop',
-        'https://images.unsplash.com/photo-1678911820864-e2c972b8de50?w=500&h=500&fit=crop'
-      ];
+      console.log('✅ Fichier traité, URL finale:', imageUrl);
       
-      // Choisir une URL aléatoire pour simuler l'upload
-      const randomUrl = realImageUrls[Math.floor(Math.random() * realImageUrls.length)];
-      console.log(`✅ Simulation upload: ${file.name} → ${randomUrl}`);
-      
-      onChange(randomUrl);
+    } catch (error) {
+      console.error('❌ Erreur traitement fichier:', error);
+      alert('Erreur lors de l\'upload de l\'image');
     }
   };
 
@@ -113,7 +145,7 @@ const ImageUpload = ({
           variant="danger"
           size="sm"
           onClick={handleRemove}
-          disabled={disabled}
+          disabled={disabled || isUploading}
           title="Supprimer cette image"
         >
           <DeleteIcon size={14} />
@@ -139,9 +171,9 @@ const ImageUpload = ({
             value="url"
             checked={uploadMethod === 'url'}
             onChange={(e) => setUploadMethod(e.target.value)}
-            disabled={disabled}
+            disabled={disabled || isUploading}
           />
-          <span style={{ fontSize: '14px' }}>URL</span>
+          <span style={{ fontSize: '14px' }}>URL d'image</span>
         </label>
         
         <label style={{
@@ -156,9 +188,9 @@ const ImageUpload = ({
             value="file"
             checked={uploadMethod === 'file'}
             onChange={(e) => setUploadMethod(e.target.value)}
-            disabled={disabled}
+            disabled={disabled || isUploading}
           />
-          <span style={{ fontSize: '14px' }}>Upload fichier (simulé)</span>
+          <span style={{ fontSize: '14px' }}>Upload depuis PC</span>
         </label>
       </div>
 
@@ -170,7 +202,7 @@ const ImageUpload = ({
             placeholder="https://exemple.com/image.jpg"
             value={value || ''}
             onChange={(e) => handleUrlChange(e.target.value)}
-            disabled={disabled}
+            disabled={disabled || isUploading}
             style={{
               width: '100%',
               padding: theme.spacing.md,
@@ -181,13 +213,6 @@ const ImageUpload = ({
               boxSizing: 'border-box'
             }}
           />
-          <div style={{
-            fontSize: '12px',
-            color: theme.colors.gray[500],
-            marginTop: theme.spacing.xs
-          }}>
-            💡 Conseil: Utilisez des URLs d'images existantes (ex: Unsplash, Pixabay)
-          </div>
         </div>
       ) : (
         <div>
@@ -196,7 +221,7 @@ const ImageUpload = ({
             type="file"
             accept="image/*"
             onChange={handleFileSelect}
-            disabled={disabled}
+            disabled={disabled || isUploading}
             style={{
               width: '100%',
               padding: theme.spacing.md,
@@ -204,7 +229,7 @@ const ImageUpload = ({
               borderRadius: theme.borderRadius.sm,
               fontSize: '14px',
               backgroundColor: theme.colors.gray[50],
-              cursor: disabled ? 'not-allowed' : 'pointer'
+              cursor: disabled || isUploading ? 'not-allowed' : 'pointer'
             }}
           />
           
@@ -215,16 +240,13 @@ const ImageUpload = ({
             borderRadius: theme.borderRadius.md,
             textAlign: 'center',
             backgroundColor: `${theme.colors.primary}10`,
-            cursor: disabled ? 'not-allowed' : 'pointer'
+            cursor: disabled || isUploading ? 'not-allowed' : 'pointer'
           }}
-          onClick={() => !disabled && fileInputRef.current?.click()}
+          onClick={() => !disabled && !isUploading && fileInputRef.current?.click()}
           >
             <UploadIcon size={32} style={{ color: theme.colors.primary, marginBottom: theme.spacing.sm }} />
             <div style={{ fontSize: '14px', color: theme.colors.primary, fontWeight: '500' }}>
-              📁 Simuler l'upload (utilise une image aléatoire)
-            </div>
-            <div style={{ fontSize: '12px', color: theme.colors.gray[500], marginTop: theme.spacing.xs }}>
-              En production, ceci uploadera votre fichier vers le serveur
+              {isUploading ? '⏳ Upload en cours...' : '📁 Cliquez pour sélectionner votre image'}
             </div>
           </div>
         </div>
@@ -290,11 +312,11 @@ const ImageUpload = ({
           id={`principal-${Math.random()}`}
           checked={isPrincipal}
           onChange={(e) => onPrincipalChange && onPrincipalChange(e.target.checked)}
-          disabled={disabled}
+          disabled={disabled || isUploading}
         />
         <label 
           htmlFor={`principal-${Math.random()}`}
-          style={{ fontSize: '14px', cursor: disabled ? 'not-allowed' : 'pointer' }}
+          style={{ fontSize: '14px', cursor: disabled || isUploading ? 'not-allowed' : 'pointer' }}
         >
           Image principale
         </label>

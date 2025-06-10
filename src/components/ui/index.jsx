@@ -2,7 +2,7 @@
 import React from 'react';
 import { theme } from '../../styles/theme';
 export { default as ImageUpload } from './ImageUpload';
-import './index.css'; 
+
 
 // Modal Component
 export const Modal = ({ isOpen, onClose, children, maxWidth = '500px' }) => {
@@ -134,6 +134,77 @@ export const Input = ({
         }}
         {...props}
       />
+      {error && (
+        <div style={{
+          color: theme.colors.danger,
+          fontSize: '12px',
+          marginTop: theme.spacing.xs
+        }}>
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Select Component
+export const Select = ({ 
+  label,
+  options = [],
+  error,
+  required = false,
+  placeholder = "Sélectionner une option",
+  ...props
+}) => {
+  return (
+    <div style={{ marginBottom: theme.spacing.lg }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: '14px',
+          fontWeight: '500',
+          color: theme.colors.gray[700],
+          marginBottom: theme.spacing.sm
+        }}>
+          {label} {required && <span style={{ color: theme.colors.danger }}>*</span>}
+        </label>
+      )}
+      <select
+        style={{
+          width: '100%',
+          padding: theme.spacing.md,
+          border: `1px solid ${error ? theme.colors.danger : theme.colors.gray[300]}`,
+          borderRadius: theme.borderRadius.md,
+          fontSize: '14px',
+          outline: 'none',
+          boxSizing: 'border-box',
+          fontFamily: theme.fonts.base,
+          backgroundColor: theme.colors.white,
+          cursor: 'pointer',
+          appearance: 'none',
+          backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e")`,
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right 12px center',
+          backgroundSize: '16px',
+          paddingRight: '40px'
+        }}
+        {...props}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map((option, index) => (
+          <option 
+            key={option.value || index} 
+            value={option.value}
+            disabled={option.disabled}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
       {error && (
         <div style={{
           color: theme.colors.danger,

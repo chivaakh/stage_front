@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+
+/* import VendeurDashboard from './pages/VendeurDashboard'
+
+export default function App() {
+  return <VendeurDashboard />
+} */

@@ -1,4 +1,4 @@
-// src/components/products/ProductFormExtended.jsx - AVEC UPLOAD D'IMAGES
+// src/components/products/ProductFormExtended.jsx - VERSION CORRIGÉE
 import { useState, useEffect } from 'react';
 import { Modal, Button, Input, Textarea } from '../ui';
 import ImageUpload from '../ui/ImageUpload';
@@ -20,7 +20,7 @@ const ProductFormExtended = ({
     specifications: []
   });
   const [errors, setErrors] = useState({});
-  const [activeTab, setActiveTab] = useState('basic'); // basic, images, specifications
+  const [activeTab, setActiveTab] = useState('basic');
 
   useEffect(() => {
     if (initialData) {
@@ -114,13 +114,13 @@ const ProductFormExtended = ({
     }
   };
 
-  // ✅ NOUVELLES FONCTIONS pour la gestion des images avec upload
+  // Gestion des images
   const addImage = () => {
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, { 
         url_image: '', 
-        est_principale: prev.images.length === 0, // Premier = principal par défaut
+        est_principale: prev.images.length === 0,
         ordre: prev.images.length 
       }]
     }));
@@ -132,7 +132,6 @@ const ProductFormExtended = ({
       images: prev.images.filter((_, i) => i !== index).map((img, i) => ({
         ...img,
         ordre: i,
-        // Si on supprime l'image principale, faire de la première la principale
         est_principale: img.est_principale && index === 0 ? false : 
                        (index === 0 && i === 0 ? true : img.est_principale)
       }))
@@ -150,7 +149,6 @@ const ProductFormExtended = ({
 
   const updateImagePrincipal = (index, isPrincipal) => {
     if (isPrincipal) {
-      // Une seule image peut être principale
       setFormData(prev => ({
         ...prev,
         images: prev.images.map((img, i) => ({
@@ -161,7 +159,7 @@ const ProductFormExtended = ({
     }
   };
 
-  // Gestion des spécifications (identique)
+  // Gestion des spécifications
   const addSpecification = () => {
     setFormData(prev => ({
       ...prev,
@@ -171,7 +169,7 @@ const ProductFormExtended = ({
         prix: '',
         prix_promo: '',
         quantite_stock: 0,
-        est_defaut: prev.specifications.length === 0, // Premier = défaut
+        est_defaut: prev.specifications.length === 0,
         reference_specification: ''
       }]
     }));
@@ -207,320 +205,353 @@ const ProductFormExtended = ({
   });
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="900px">
-      <h2 style={{
-        fontSize: '24px',
-        fontWeight: '700',
-        color: theme.colors.gray[800],
-        marginBottom: theme.spacing.lg,
-        margin: `0 0 ${theme.spacing.lg} 0`
+    <Modal isOpen={isOpen} onClose={handleClose} maxWidth="1000px">
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        height: '85vh', // ✅ HAUTEUR FIXE
+        overflow: 'hidden' 
       }}>
-        {isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}
-      </h2>
+        {/* En-tête fixe */}
+        <div style={{ 
+          borderBottom: `1px solid ${theme.colors.gray[300]}`,
+          paddingBottom: theme.spacing.md,
+          marginBottom: 0,
+          flexShrink: 0 // ✅ NE PAS RÉTRÉCIR
+        }}>
+          <h2 style={{
+            fontSize: '24px',
+            fontWeight: '700',
+            color: theme.colors.gray[800],
+            margin: `0 0 ${theme.spacing.lg} 0`
+          }}>
+            {isEditing ? 'Modifier le produit' : 'Ajouter un nouveau produit'}
+          </h2>
 
-      {/* Onglets */}
-      <div style={{
-        display: 'flex',
-        borderBottom: `1px solid ${theme.colors.gray[300]}`,
-        marginBottom: theme.spacing.lg
-      }}>
-        <button
-          type="button"
-          style={tabStyle('basic')}
-          onClick={() => setActiveTab('basic')}
-        >
-          Informations de base
-        </button>
-        <button
-          type="button"
-          style={tabStyle('images')}
-          onClick={() => setActiveTab('images')}
-        >
-          Images ({formData.images.length})
-        </button>
-        <button
-          type="button"
-          style={tabStyle('specifications')}
-          onClick={() => setActiveTab('specifications')}
-        >
-          Spécifications ({formData.specifications.length})
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        {/* Onglet Informations de base */}
-        {activeTab === 'basic' && (
-          <div>
-            <Input
-              label="Nom du produit"
-              placeholder="Ex: iPhone 15 Pro"
-              value={formData.nom}
-              onChange={(e) => handleChange('nom', e.target.value)}
-              error={errors.nom}
-              required
-              disabled={isLoading}
-            />
-
-            <Textarea
-              label="Description"
-              placeholder="Description détaillée du produit..."
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              error={errors.description}
-              required
-              rows={4}
-              disabled={isLoading}
-            />
-
-            <Input
-              label="Référence"
-              placeholder="Ex: IP15-001"
-              value={formData.reference}
-              onChange={(e) => handleChange('reference', e.target.value)}
-              error={errors.reference}
-              required
-              disabled={isLoading}
-            />
+          {/* Onglets */}
+          <div style={{
+            display: 'flex',
+            borderBottom: `1px solid ${theme.colors.gray[300]}`
+          }}>
+            <button
+              type="button"
+              style={tabStyle('basic')}
+              onClick={() => setActiveTab('basic')}
+            >
+              Informations de base
+            </button>
+            <button
+              type="button"
+              style={tabStyle('images')}
+              onClick={() => setActiveTab('images')}
+            >
+              Images ({formData.images.length})
+            </button>
+            <button
+              type="button"
+              style={tabStyle('specifications')}
+              onClick={() => setActiveTab('specifications')}
+            >
+              Spécifications ({formData.specifications.length})
+            </button>
           </div>
-        )}
+        </div>
 
-        {/* ✅ ONGLET IMAGES AMÉLIORÉ avec upload */}
-        {activeTab === 'images' && (
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: theme.spacing.lg
-            }}>
-              <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
-                Images du produit
-              </h3>
-              <Button
-                type="button"
-                size="sm"
-                onClick={addImage}
-                disabled={isLoading}
-              >
-                <PlusIcon size={16} />
-                Ajouter une image
-              </Button>
-            </div>
-
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              gap: theme.spacing.lg,
-              maxHeight: '500px',
-              overflowY: 'auto'
-            }}>
-              {formData.images.map((image, index) => (
-                <ImageUpload
-                  key={index}
-                  label={`Image ${index + 1}`}
-                  value={image.url_image}
-                  onChange={(url) => updateImageUrl(index, url)}
-                  onRemove={() => removeImage(index)}
-                  isPrincipal={image.est_principale}
-                  onPrincipalChange={(isPrincipal) => updateImagePrincipal(index, isPrincipal)}
+        {/* Contenu scrollable */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto', // ✅ SCROLL UNIQUEMENT ICI
+          padding: `${theme.spacing.lg} 0`,
+          marginBottom: theme.spacing.lg
+        }}>
+          <form onSubmit={handleSubmit}>
+            {/* Onglet Informations de base */}
+            {activeTab === 'basic' && (
+              <div>
+                <Input
+                  label="Nom du produit"
+                  placeholder="Saisissez le nom de votre produit"
+                  value={formData.nom}
+                  onChange={(e) => handleChange('nom', e.target.value)}
+                  error={errors.nom}
+                  required
                   disabled={isLoading}
                 />
-              ))}
-            </div>
 
-            {formData.images.length === 0 && (
-              <div style={{
-                textAlign: 'center',
-                padding: theme.spacing.xl,
-                color: theme.colors.gray[500],
-                border: `2px dashed ${theme.colors.gray[300]}`,
-                borderRadius: theme.borderRadius.md
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: theme.spacing.md }}>🖼️</div>
-                <div style={{ marginBottom: theme.spacing.sm }}>Aucune image ajoutée</div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addImage}
+                <Textarea
+                  label="Description"
+                  placeholder="Décrivez votre produit, ses caractéristiques et avantages"
+                  value={formData.description}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  error={errors.description}
+                  required
+                  rows={4}
                   disabled={isLoading}
-                >
-                  Ajouter la première image
-                </Button>
+                />
+
+                <Input
+                  label="Référence"
+                  placeholder="Code ou référence unique du produit"
+                  value={formData.reference}
+                  onChange={(e) => handleChange('reference', e.target.value)}
+                  error={errors.reference}
+                  required
+                  disabled={isLoading}
+                />
               </div>
             )}
-          </div>
-        )}
 
-        {/* Onglet Spécifications (identique) */}
-        {activeTab === 'specifications' && (
-          <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: theme.spacing.lg
-            }}>
-              <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
-                Spécifications du produit
-              </h3>
-              <Button
-                type="button"
-                size="sm"
-                onClick={addSpecification}
-                disabled={isLoading}
-              >
-                <PlusIcon size={16} />
-                Ajouter une spécification
-              </Button>
-            </div>
-
-            {formData.specifications.map((spec, index) => (
-              <div
-                key={index}
-                style={{
-                  border: `1px solid ${theme.colors.gray[300]}`,
-                  borderRadius: theme.borderRadius.md,
-                  padding: theme.spacing.md,
-                  marginBottom: theme.spacing.md
-                }}
-              >
+            {/* Onglet Images */}
+            {activeTab === 'images' && (
+              <div>
                 <div style={{
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: theme.spacing.sm
+                  marginBottom: theme.spacing.lg,
+                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
                 }}>
-                  <span style={{ fontWeight: '500' }}>Spécification {index + 1}</span>
+                  <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
+                    Images du produit
+                  </h3>
                   <Button
                     type="button"
-                    variant="danger"
                     size="sm"
-                    onClick={() => removeSpecification(index)}
+                    onClick={addImage}
+                    disabled={isLoading}
                   >
-                    <DeleteIcon size={14} />
+                    <PlusIcon size={16} />
+                    Ajouter une image
                   </Button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
-                  <Input
-                    label="Nom"
-                    placeholder="Ex: 128GB"
-                    value={spec.nom}
-                    onChange={(e) => updateSpecification(index, 'nom', e.target.value)}
-                    error={errors[`spec_nom_${index}`]}
-                    required
-                    disabled={isLoading}
-                  />
-
-                  <Input
-                    label="Référence"
-                    placeholder="Ex: IP15-128"
-                    value={spec.reference_specification}
-                    onChange={(e) => updateSpecification(index, 'reference_specification', e.target.value)}
-                    disabled={isLoading}
-                  />
-
-                  <Input
-                    label="Prix (MRU)"
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 40000"
-                    value={spec.prix}
-                    onChange={(e) => updateSpecification(index, 'prix', e.target.value)}
-                    error={errors[`spec_prix_${index}`]}
-                    required
-                    disabled={isLoading}
-                  />
-
-                  <Input
-                    label="Prix promo (MRU)"
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 35000"
-                    value={spec.prix_promo}
-                    onChange={(e) => updateSpecification(index, 'prix_promo', e.target.value)}
-                    disabled={isLoading}
-                  />
-
-                  <Input
-                    label="Stock"
-                    type="number"
-                    value={spec.quantite_stock}
-                    onChange={(e) => updateSpecification(index, 'quantite_stock', parseInt(e.target.value) || 0)}
-                    disabled={isLoading}
-                  />
-
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, marginTop: theme.spacing.lg }}>
-                    <input
-                      type="checkbox"
-                      id={`defaut_${index}`}
-                      checked={spec.est_defaut}
-                      onChange={(e) => updateSpecification(index, 'est_defaut', e.target.checked)}
+                <div style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  gap: theme.spacing.lg,
+                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                }}>
+                  {formData.images.map((image, index) => (
+                    <ImageUpload
+                      key={index}
+                      label={`Image ${index + 1}`}
+                      value={image.url_image}
+                      onChange={(url) => updateImageUrl(index, url)}
+                      onRemove={() => removeImage(index)}
+                      isPrincipal={image.est_principale}
+                      onPrincipalChange={(isPrincipal) => updateImagePrincipal(index, isPrincipal)}
                       disabled={isLoading}
                     />
-                    <label htmlFor={`defaut_${index}`}>Spécification par défaut</label>
-                  </div>
+                  ))}
                 </div>
 
-                <Textarea
-                  label="Description"
-                  placeholder="Description de cette spécification..."
-                  value={spec.description}
-                  onChange={(e) => updateSpecification(index, 'description', e.target.value)}
-                  rows={2}
-                  disabled={isLoading}
-                />
-              </div>
-            ))}
-
-            {formData.specifications.length === 0 && (
-              <div style={{
-                textAlign: 'center',
-                padding: theme.spacing.xl,
-                color: theme.colors.gray[500],
-                border: `2px dashed ${theme.colors.gray[300]}`,
-                borderRadius: theme.borderRadius.md
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: theme.spacing.md }}>📋</div>
-                <div style={{ marginBottom: theme.spacing.sm }}>Aucune spécification ajoutée</div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addSpecification}
-                  disabled={isLoading}
-                >
-                  Ajouter la première spécification
-                </Button>
+                {formData.images.length === 0 && (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: theme.spacing.xl,
+                    color: theme.colors.gray[500],
+                    border: `2px dashed ${theme.colors.gray[300]}`,
+                    borderRadius: theme.borderRadius.md,
+                    margin: `0 ${theme.spacing.md}`
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: theme.spacing.md }}>🖼️</div>
+                    <div style={{ marginBottom: theme.spacing.sm }}>Aucune image ajoutée</div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addImage}
+                      disabled={isLoading}
+                    >
+                      Ajouter la première image
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Boutons de validation */}
-        <div style={{
-          display: 'flex',
-          gap: theme.spacing.md,
-          justifyContent: 'flex-end',
-          marginTop: theme.spacing.xl,
-          paddingTop: theme.spacing.lg,
-          borderTop: `1px solid ${theme.colors.gray[300]}`
-        }}>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isLoading}
-          >
-            Annuler
-          </Button>
-          <Button
-            type="submit"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Traitement...' : (isEditing ? 'Modifier' : 'Créer')}
-          </Button>
+            {/* Onglet Spécifications */}
+            {activeTab === 'specifications' && (
+              <div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: theme.spacing.lg,
+                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                }}>
+                  <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
+                    Spécifications du produit
+                  </h3>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={addSpecification}
+                    disabled={isLoading}
+                  >
+                    <PlusIcon size={16} />
+                    Ajouter une spécification
+                  </Button>
+                </div>
+
+                <div style={{ 
+                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                }}>
+                  {formData.specifications.map((spec, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        border: `1px solid ${theme.colors.gray[300]}`,
+                        borderRadius: theme.borderRadius.md,
+                        padding: theme.spacing.md,
+                        marginBottom: theme.spacing.md
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: theme.spacing.sm
+                      }}>
+                        <span style={{ fontWeight: '500' }}>Spécification {index + 1}</span>
+                        <Button
+                          type="button"
+                          variant="danger"
+                          size="sm"
+                          onClick={() => removeSpecification(index)}
+                        >
+                          <DeleteIcon size={14} />
+                        </Button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: theme.spacing.md }}>
+                        <Input
+                          label="Nom"
+                          placeholder="Nom de cette variante ou spécification"
+                          value={spec.nom}
+                          onChange={(e) => updateSpecification(index, 'nom', e.target.value)}
+                          error={errors[`spec_nom_${index}`]}
+                          required
+                          disabled={isLoading}
+                        />
+
+                        <Input
+                          label="Référence"
+                          placeholder="Référence de cette spécification"
+                          value={spec.reference_specification}
+                          onChange={(e) => updateSpecification(index, 'reference_specification', e.target.value)}
+                          disabled={isLoading}
+                        />
+
+                        <Input
+                          label="Prix (MRU)"
+                          type="number"
+                          step="0.01"
+                          placeholder="Prix en Ouguiya"
+                          value={spec.prix}
+                          onChange={(e) => updateSpecification(index, 'prix', e.target.value)}
+                          error={errors[`spec_prix_${index}`]}
+                          required
+                          disabled={isLoading}
+                        />
+
+                        <Input
+                          label="Prix promo (MRU)"
+                          type="number"
+                          step="0.01"
+                          placeholder="Prix promotionnel (optionnel)"
+                          value={spec.prix_promo}
+                          onChange={(e) => updateSpecification(index, 'prix_promo', e.target.value)}
+                          disabled={isLoading}
+                        />
+
+                        <Input
+                          label="Stock"
+                          type="number"
+                          placeholder="Quantité disponible"
+                          value={spec.quantite_stock}
+                          onChange={(e) => updateSpecification(index, 'quantite_stock', parseInt(e.target.value) || 0)}
+                          disabled={isLoading}
+                        />
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm, marginTop: theme.spacing.lg }}>
+                          <input
+                            type="checkbox"
+                            id={`defaut_${index}`}
+                            checked={spec.est_defaut}
+                            onChange={(e) => updateSpecification(index, 'est_defaut', e.target.checked)}
+                            disabled={isLoading}
+                          />
+                          <label htmlFor={`defaut_${index}`}>Spécification par défaut</label>
+                        </div>
+                      </div>
+
+                      <Textarea
+                        label="Description"
+                        placeholder="Détails spécifiques à cette variante"
+                        value={spec.description}
+                        onChange={(e) => updateSpecification(index, 'description', e.target.value)}
+                        rows={2}
+                        disabled={isLoading}
+                      />
+                    </div>
+                  ))}
+
+                  {formData.specifications.length === 0 && (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: theme.spacing.xl,
+                      color: theme.colors.gray[500],
+                      border: `2px dashed ${theme.colors.gray[300]}`,
+                      borderRadius: theme.borderRadius.md
+                    }}>
+                      <div style={{ fontSize: '48px', marginBottom: theme.spacing.md }}>📋</div>
+                      <div style={{ marginBottom: theme.spacing.sm }}>Aucune spécification ajoutée</div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={addSpecification}
+                        disabled={isLoading}
+                      >
+                        Ajouter la première spécification
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </form>
         </div>
-      </form>
+
+        {/* ✅ BOUTONS FIXES EN BAS */}
+        <div style={{
+          borderTop: `1px solid ${theme.colors.gray[300]}`,
+          padding: `${theme.spacing.lg} ${theme.spacing.md} 0`,
+          backgroundColor: theme.colors.white,
+          flexShrink: 0 // ✅ NE PAS RÉTRÉCIR
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: theme.spacing.md,
+            justifyContent: 'flex-end'
+          }}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              disabled={isLoading}
+              onClick={handleSubmit}
+            >
+              {isLoading ? 'Traitement...' : (isEditing ? 'Modifier' : 'Créer')}
+            </Button>
+          </div>
+        </div>
+      </div>
     </Modal>
   );
 };
