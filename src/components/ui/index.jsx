@@ -3,6 +3,7 @@ import React from 'react';
 import { theme } from '../../styles/theme';
 export { default as ImageUpload } from './ImageUpload';
 
+
 // Modal Component
 export const Modal = ({ isOpen, onClose, children, maxWidth = '500px' }) => {
   if (!isOpen) return null;

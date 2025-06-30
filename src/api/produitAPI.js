@@ -1,8 +1,7 @@
 // src/api/produitAPI.js - Version mise à jour
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/produits/';
-
+ const API_URL = '/api/produits/';
 // Configuration axios avec intercepteurs pour debug
 axios.interceptors.request.use(request => {
   console.log('🚀 Requête:', request.method?.toUpperCase(), request.url);

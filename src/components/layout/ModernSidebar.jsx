@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { theme } from '../../styles/theme';
-import { useNavigate } from 'react-router-dom';
 
-
-
-const ModernSidebar = ({ onAddProductClick, currentPage = 'products' }) => {
-  const [expandedMenus, setExpandedMenus] = useState({ products: true, orders: false });
+const ModernSidebar = ({ children, onAddProductClick, currentPage = 'products' }) => {
+  const [expandedMenus, setExpandedMenus] = useState({ 
+    products: true, 
+    orders: false,
+    stock: false 
+  });
 
   const toggleMenu = (menuId) => {
     setExpandedMenus(prev => ({
@@ -14,7 +15,9 @@ const ModernSidebar = ({ onAddProductClick, currentPage = 'products' }) => {
       [menuId]: !prev[menuId]
     }));
   };
-const navigate = useNavigate();
+
+  const navigate = useNavigate();
+
   const menuItems = [
     {
       id: 'dashboard',
@@ -24,54 +27,105 @@ const navigate = useNavigate();
       onClick: () => navigate('/dashboard')
     },
     {
-  id: 'orders',
-  icon: '🧾',
-  label: 'Orders',
-  active: currentPage === 'orders',
-  expandable: true, 
-  expanded: expandedMenus.orders, 
-  submenu: [
-    {
-      id: 'all-orders',
-      label: 'All Orders',
-      active: currentPage === 'all-orders',
-      onClick: () => navigate('/commandes') 
+      id: 'orders',
+      icon: '🧾',
+      label: 'Commandes',
+      active: ['orders', 'all-orders', 'today-orders', 'order-tracking', 'archives'].includes(currentPage),
+      expandable: true, 
+      expanded: expandedMenus.orders, 
+      submenu: [
+        {
+          id: 'all-orders',
+          label: 'Toutes les commandes',
+          active: currentPage === 'all-orders' || currentPage === 'orders',
+          onClick: () => navigate('/commandes') 
+        },
+        {
+          id: 'today-orders',
+          label: 'Commandes du jour',
+          active: currentPage === 'today-orders',
+          onClick: () => navigate('/today-orders')
+        },
+        {
+          id: 'order-tracking',
+          label: 'Historique global',
+          active: currentPage === 'order-tracking',
+          onClick: () => navigate('/orders/history')  // ✅ Vers la nouvelle page d'historique
+        },
+        {
+          id: 'archives',
+          label: 'Archives',
+          active: currentPage === 'archives',
+          onClick: () => navigate('/orders/archives')  // ✅ Vers la page d'archives
+        }
+      ]
     },
-   
-  ]
-},
     {
       id: 'products',
       icon: '📦',
-      label: 'Products',
+      label: 'Produits',
       active: currentPage === 'products',
       expandable: true,
       expanded: expandedMenus.products,
       submenu: [
         {
           id: 'all-products',
-          label: 'All Products',
-          active: true,
+          label: 'Tous les produits',
+          active: currentPage === 'products',
           onClick: () => navigate('/products')
         },
         {
           id: 'add-product',
-          label: 'Add Product',
+          label: 'Ajouter produit',
           onClick: onAddProductClick
         },
         {
           id: 'categories',
-          label: 'Categories',
+          label: 'Catégories',
           onClick: () => console.log('Navigate to Categories')
         }
       ]
     },
     {
       id: 'stock',
-      icon: '🏠',
+      icon: '📈',
       label: 'Gestion Stock',
-      active: currentPage === 'stock',
-      onClick: () => navigate('/stock')
+      active: ['stock', 'stock-dashboard', 'stock-history', 'stock-report', 'stock-notifications'].includes(currentPage),
+      expandable: true,
+      expanded: expandedMenus.stock,
+      submenu: [
+        {
+          id: 'stock-dashboard',
+          label: 'Dashboard Stock',
+          active: currentPage === 'stock' || currentPage === 'stock-dashboard',
+          onClick: () => navigate('/stock')
+        },
+        {
+          id: 'stock-history',
+          label: 'Historique mouvements',
+          active: currentPage === 'stock-history',
+          onClick: () => navigate('/stock/historique')
+        },
+        {
+          id: 'stock-report',
+          label: 'Rapports',
+          active: currentPage === 'stock-report',
+          onClick: () => navigate('/stock/rapport')
+        },
+        {
+          id: 'stock-notifications',
+          label: 'Notifications',
+          active: currentPage === 'stock-notifications',
+          onClick: () => navigate('/stock/notifications')
+        }
+      ]
+    },
+    {
+      id: 'client',
+      icon: '👤',
+      label: 'Vue Client',
+      active: currentPage === 'client',
+      onClick: () => navigate('/client')
     },
     {
       id: 'chats',
@@ -272,9 +326,16 @@ const navigate = useNavigate();
                           color: subItem.active ? '#4f46e5' : theme.colors.gray[500],
                           fontWeight: subItem.active ? '600' : '500',
                           backgroundColor: subItem.active ? '#e0e7ff' : 'transparent',
-                          margin: `${theme.spacing.xs} 0`
+                          margin: `${theme.spacing.xs} 0`,
+                          transition: 'all 0.2s ease'
                         }}
                         onClick={subItem.onClick}
+                        onMouseEnter={(e) => {
+                          if (!subItem.active) e.target.style.backgroundColor = '#f1f5f9';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!subItem.active) e.target.style.backgroundColor = 'transparent';
+                        }}
                       >
                         {subItem.label}
                       </div>
@@ -315,9 +376,16 @@ const navigate = useNavigate();
                 fontSize: '14px',
                 color: item.danger ? '#ef4444' : theme.colors.gray[600],
                 fontWeight: '500',
-                marginBottom: theme.spacing.xs
+                marginBottom: theme.spacing.xs,
+                transition: 'all 0.2s ease'
               }}
               onClick={item.onClick}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = item.danger ? '#fef2f2' : '#f1f5f9';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+              }}
             >
               <span style={{ fontSize: '16px' }}>{item.icon}</span>
               <span>{item.label}</span>
