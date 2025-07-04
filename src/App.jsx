@@ -13,7 +13,9 @@ import OrdersList from './pages/orders/OrdersList';
 // import OrderDetails from './pages/orders/OrderDetails';
 import AuthPage from './pages/AuthPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
+import ChoixTypeUtilisateur from './pages/ChoixTypeUtilisateur'; // adapte le chemin selon ton dossier
+import CreerBoutique from './pages/CreerBoutique';
+import ClientPage from './pages/ClientPage';
 
 
 function App() {
@@ -51,14 +53,25 @@ function App() {
         {/* <Route path="/commandes" element={<OrdersList />} /> */}
         {/* <Route path="/commandes/:id" element={<OrderDetails />} /> */}
         <Route path="/products" element={< VendeurDashboard/>} />
-         {/* <Route path="/orders/edit/:id" element={<OrderEdit />} /> */}
+        {/* <Route path="/orders/edit/:id" element={<OrderEdit />} /> */}
 
+
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/login" element={<AuthPage />} />
+        <Routgjge path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+        <Route
+          path="/choix-utilisateur"
+          element={<ChoixTypeUtilisateur onChoisir={(type) => {
+            console.log("Utilisateur a choisi :", type);
+            // Exemple : redirection après choix
+            window.location.href = type === 'vendeur' ? '/dashboard' : '/products';
+          }} />}
+        />
+        <Route path="/creer-boutique" element={<CreerBoutique />} />
+
+        <Route path="/client" element={<ClientPage />} />
       </Routes>
-      <Routes>
-              <Route path="/" element={<Navigate to="/login" />} />
-              <Route path="/login" element={<AuthPage />} />
-              <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-            </Routes>
     </Router>
   );
 }

@@ -8,6 +8,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);  // <-- pour afficher le formulaire reset
+  const [signupMode, setSignupMode] = useState("telephone"); // ou "email"
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -185,6 +186,31 @@ const AuthPage = () => {
       setSuccessMsg("Connexion réussie !");
       // TODO: redirection ou mise à jour état connecté ici
 
+
+      // Appel backend pour vérifier si c’est un vendeur et s’il a un profil boutique
+// 🕒 Attendre une courte durée pour que le cookie de session soit bien reçu
+setTimeout(async () => {
+  try {
+    const profilRes = await fetch("http://localhost:8000/api/profil-vendeur/", {
+      credentials: "include",
+    });
+
+    if (profilRes.status === 404) {
+      window.location.href = "/creer-boutique";
+    } else if (profilRes.ok) {
+      window.location.href = "/dashboard";
+    } else {
+      const data = await profilRes.json();
+      setErrorMsg(data?.error || "Erreur lors de la vérification du profil vendeur.");
+    }
+  } catch (err) {
+    setErrorMsg("Erreur réseau lors de la vérification du profil vendeur.");
+  }
+}, 500); // attendre 500ms
+
+
+
+
     } catch (err) {
       setErrorMsg(err.message);
     }
@@ -194,6 +220,19 @@ const AuthPage = () => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     resetMessages();
+
+    if (signupMode === "email" && !formData.email) {
+    setErrorMsg("L'email est requis pour cette méthode.");
+    return;
+    }
+
+
+    const typeUtilisateur = localStorage.getItem("type_utilisateur");
+
+    if (!typeUtilisateur) {
+      setErrorMsg("Veuillez d'abord choisir si vous êtes client ou vendeur.");
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:8000/api/signup/", {
@@ -205,6 +244,7 @@ const AuthPage = () => {
           email: formData.email || "",
           telephone: formData.telephone,
           mot_de_passe: formData.password,
+          type_utilisateur: typeUtilisateur,
         }),
       });
 
@@ -219,7 +259,11 @@ const AuthPage = () => {
       }
 
       setSuccessMsg("Inscription réussie ! Connectez-vous.");
-      setIsLogin(true);
+      if (typeUtilisateur === "vendeur") {
+        window.location.href = "/creer-boutique";  //  redirection immédiate vers le formulaire boutique
+      } else {
+        setIsLogin(true);  // le client reste sur la page login
+      }
       setFormData({ nom: "", prenom: "", email: "", telephone: "", password: "" });
 
     } catch (err) {
@@ -258,8 +302,10 @@ const AuthPage = () => {
       >
 {/* Login form ou Reset form (exclusif) */}
         <div
-          className={`flex w-1/2 p-8 flex-col justify-center transition-transform duration-700 ease-in-out`}
-        >
+  className={`absolute top-0 left-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
+    isLogin ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none"
+  } flex`}
+>
           {showResetPassword ? (
             <>
               <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Réinitialiser le mot de passe</h2>
@@ -356,9 +402,9 @@ const AuthPage = () => {
 
         {/* Signup form */}
         <div
-          className={`w-1/2 p-8 flex-col justify-center transition-transform duration-700 ease-in-out ${
-            isLogin ? "translate-x-full" : "translate-x-0"
-          } flex bg-white/20 backdrop-blur-lg h-full rounded-l-3xl`}
+          className={`absolute top-0 right-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
+            isLogin ? "translate-x-full opacity-0 pointer-events-none" : "translate-x-0 opacity-100 pointer-events-auto"
+          } flex`}
         >
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Inscription</h2>
           <form onSubmit={handleSignupSubmit} className="space-y-4">
@@ -387,22 +433,30 @@ const AuthPage = () => {
                 <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
             </div>
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email (optionnel)"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
-              />
-              <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
+            {signupMode === "email" && (
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email (obligatoire)"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                />
+                <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              </div>
+            )}
+
             <div className="relative">
               <input
                 type="tel"
                 name="telephone"
-                placeholder="Téléphone"
+                placeholder={
+                  signupMode === "telephone"
+                    ? "Téléphone (obligatoire)"
+                    : "Téléphone (secondaire obligatoire)"
+                }
                 value={formData.telephone}
                 onChange={handleInputChange}
                 required
@@ -410,6 +464,7 @@ const AuthPage = () => {
               />
               <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
+
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -522,6 +577,26 @@ const AuthPage = () => {
             >
               S'inscrire
             </button>
+            <div className="text-center mt-2">
+  {signupMode === "telephone" ? (
+    <button
+      type="button"
+      onClick={() => setSignupMode("email")}
+      className="text-blue-600 underline"
+    >
+      S'inscrire avec email
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={() => setSignupMode("telephone")}
+      className="text-blue-600 underline"
+    >
+      S'inscrire avec téléphone
+    </button>
+  )}
+</div>
+
           </form>
         </div>
       </div>
