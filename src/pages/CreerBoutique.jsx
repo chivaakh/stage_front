@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Store, FileText, MapPin, Phone, Upload, User } from 'lucide-react';
 
 const CreerBoutique = () => {
   const [formData, setFormData] = useState({
@@ -12,9 +13,6 @@ const CreerBoutique = () => {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // ✅ SUPPRIMÉ : Plus d'appel useEffect pour vérifier l'auth au chargement
-  // L'utilisateur est déjà arrivé ici via la redirection après login
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -79,146 +77,162 @@ const CreerBoutique = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded-xl">
-      <h2 className="text-2xl font-bold mb-4 text-center">Créer votre boutique</h2>
-      <p className="text-gray-600 text-center mb-6">
-        Remplissez les informations de votre boutique pour commencer à vendre
-      </p>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nom de la boutique *
-          </label>
-          <input 
-            type="text" 
-            name="nom_boutique" 
-            placeholder="Ex: Ma Super Boutique" 
-            value={formData.nom_boutique}
-            onChange={handleChange} 
-            required 
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Description
-          </label>
-          <textarea 
-            name="description" 
-            placeholder="Décrivez votre boutique et vos produits..." 
-            value={formData.description}
-            onChange={handleChange} 
-            disabled={loading}
-            rows={3}
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Adresse
-          </label>
-          <input 
-            type="text" 
-            name="adresse" 
-            placeholder="123 Rue de la Paix" 
-            value={formData.adresse}
-            onChange={handleChange} 
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Ville *
-          </label>
-          <input 
-            type="text" 
-            name="ville" 
-            placeholder="Ex: Nouakchott" 
-            value={formData.ville}
-            onChange={handleChange} 
-            required 
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Téléphone professionnel
-          </label>
-          <input 
-            type="tel" 
-            name="telephone_professionnel" 
-            placeholder="Ex: +222 XX XX XX XX" 
-            value={formData.telephone_professionnel}
-            onChange={handleChange} 
-            disabled={loading}
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Logo de la boutique
-          </label>
-          <input 
-            type="file" 
-            name="logo" 
-            onChange={handleChange} 
-            disabled={loading}
-            accept="image/*"
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100" 
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Formats acceptés: JPG, PNG, GIF (Max: 5MB)
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-r from-slate-100 via-blue-50 to-purple-50 p-4 overflow-hidden relative">
+      {/* Background bubbles */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"></div>
+        <div className="absolute -bottom-20 left-40 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-2000"></div>
+        <div className="absolute bottom-40 right-40 w-60 h-60 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-500"></div>
+      </div>
+
+      {/* Main container */}
+      <div className="relative z-10 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30 p-8">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
+              <Store className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Créer votre boutique</h2>
+          <p className="text-gray-600">
+            Remplissez les informations de votre boutique pour commencer à vendre
           </p>
         </div>
         
-        {error && (
-          <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-            <strong>Erreur:</strong> {error}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Nom de la boutique */}
+          <div className="relative">
+            <input 
+              type="text" 
+              name="nom_boutique" 
+              placeholder="Nom de la boutique *"
+              value={formData.nom_boutique}
+              onChange={handleChange} 
+              required 
+              disabled={loading}
+              className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50" 
+            />
+            <Store className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           </div>
-        )}
-        
-        {success && (
-          <div className="p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-            <strong>Succès:</strong> {success}
+          
+          {/* Description */}
+          <div className="relative">
+            <textarea 
+              name="description" 
+              placeholder="Description de votre boutique et de vos produits..."
+              value={formData.description}
+              onChange={handleChange} 
+              disabled={loading}
+              rows={3}
+              className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50 resize-none" 
+            />
+            <FileText className="absolute right-4 top-4 text-gray-400 w-5 h-5" />
           </div>
-        )}
-        
-        <button 
-          type="submit" 
-          disabled={loading}
-          className={`w-full px-4 py-3 rounded font-semibold transition-colors ${
-            loading 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Création en cours...
+          
+          {/* Adresse et Ville sur la même ligne */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
+              <input 
+                type="text" 
+                name="adresse" 
+                placeholder="Adresse"
+                value={formData.adresse}
+                onChange={handleChange} 
+                disabled={loading}
+                className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50" 
+              />
+              <MapPin className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
-          ) : (
-            'Créer ma boutique'
+            
+            <div className="relative">
+              <input 
+                type="text" 
+                name="ville" 
+                placeholder="Ville *"
+                value={formData.ville}
+                onChange={handleChange} 
+                required 
+                disabled={loading}
+                className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50" 
+              />
+              <MapPin className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            </div>
+          </div>
+          
+          {/* Téléphone professionnel */}
+          <div className="relative">
+            <input 
+              type="tel" 
+              name="telephone_professionnel" 
+              placeholder="Téléphone professionnel (ex: +222 XX XX XX XX)"
+              value={formData.telephone_professionnel}
+              onChange={handleChange} 
+              disabled={loading}
+              className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50" 
+            />
+            <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+          
+          {/* Logo upload */}
+          <div className="relative">
+            <input 
+              type="file" 
+              name="logo" 
+              onChange={handleChange} 
+              disabled={loading}
+              accept="image/*"
+              className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition disabled:bg-gray-100/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gradient-to-r file:from-blue-500 file:to-purple-600 file:text-white hover:file:from-blue-600 hover:file:to-purple-700" 
+            />
+            <Upload className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+          <p className="text-xs text-gray-500 -mt-4 ml-2">
+            Formats acceptés: JPG, PNG, GIF (Max: 5MB)
+          </p>
+          
+          {/* Messages d'erreur et de succès */}
+          {error && (
+            <div className="p-4 bg-red-100/80 backdrop-blur-sm border border-red-300/50 text-red-700 rounded-xl">
+              <strong>Erreur:</strong> {error}
+            </div>
           )}
-        </button>
-      </form>
-      
-      <div className="mt-6 text-center">
-        <p className="text-sm text-gray-500">
-          En créant votre boutique, vous acceptez nos{' '}
-          <a href="/terms" className="text-blue-600 hover:underline">
-            conditions d'utilisation
-          </a>
-        </p>
+          
+          {success && (
+            <div className="p-4 bg-green-100/80 backdrop-blur-sm border border-green-300/50 text-green-700 rounded-xl">
+              <strong>Succès:</strong> {success}
+            </div>
+          )}
+          
+          {/* Bouton de soumission */}
+          <button 
+            type="submit" 
+            disabled={loading}
+            className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 transform ${
+              loading 
+                ? 'bg-gray-400/50 cursor-not-allowed backdrop-blur-sm' 
+                : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:scale-105 shadow-lg'
+            }`}
+          >
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Création en cours...
+              </div>
+            ) : (
+              'Créer ma boutique'
+            )}
+          </button>
+        </form>
+        
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-sm text-gray-500">
+            En créant votre boutique, vous acceptez nos{' '}
+            <a href="/terms" className="text-blue-600 hover:text-blue-800 underline transition-colors">
+              conditions d'utilisation
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );

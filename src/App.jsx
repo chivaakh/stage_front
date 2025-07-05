@@ -16,6 +16,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChoixTypeUtilisateur from './pages/ChoixTypeUtilisateur'; // adapte le chemin selon ton dossier
 import CreerBoutique from './pages/CreerBoutique';
 import ClientPage from './pages/ClientPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
 
 function App() {
@@ -38,7 +40,7 @@ function App() {
         <Route path="/commandes" element={<OrdersList />} />
         {/* <Route path="/commandes/:id" element={<OrderDetails />} /> */}
         <Route path="/products" element={< VendeurDashboard/>} />
-         <Route path="/orders/edit/:id" element={<OrderEdit />} />
+        <Route path="/orders/edit/:id" element={<OrderEdit />} />
 
         {/* Dashboard Main */}
         <Route path="/dashboard" element={<VendeurDashboard />} />
@@ -58,7 +60,7 @@ function App() {
 
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<AuthPage />} />
-        <Routgjge path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         <Route
           path="/choix-utilisateur"
@@ -71,6 +73,10 @@ function App() {
         <Route path="/creer-boutique" element={<CreerBoutique />} />
 
         <Route path="/client" element={<ClientPage />} />
+
+        <Route path="/profile" element={<ProfilePage />} />
+
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
   );

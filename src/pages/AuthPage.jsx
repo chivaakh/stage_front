@@ -9,6 +9,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);  // <-- pour afficher le formulaire reset
   const [signupMode, setSignupMode] = useState("telephone"); // ou "email"
+  const [loginMode, setLoginMode] = useState("telephone"); // "telephone" ou "email"
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -30,38 +31,6 @@ const AuthPage = () => {
   };
 
 
-  // // Facebook login success handler
-  // const handleFacebookLogin = async (response) => {
-  //   try {
-  //     if (!response.accessToken) {
-  //       throw new Error("Facebook login failed");
-  //     }
-
-  //     // You can send the response access token to your backend for further verification and user creation
-  //     const res = await fetch("http://localhost:8000/api/facebook-login/", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         accessToken: response.accessToken,
-  //       }),
-  //       credentials: "include",
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) throw new Error(data.error || "Erreur serveur Facebook login");
-
-  //     setSuccessMsg("Connexion Facebook réussie !");
-  //     // TODO: redirect user or set logged in state
-  //   } catch (err) {
-  //     setErrorMsg(err.message);
-  //   }
-  // };
-
-  // // Facebook login error handler
-  // const handleFacebookError = () => {
-  //   setErrorMsg("Connexion Facebook échouée.");
-  // };
 
 
   useEffect(() => {
@@ -162,12 +131,19 @@ const AuthPage = () => {
     e.preventDefault();
     resetMessages();
 
+    if (loginMode === "telephone" && formData.telephone.includes('@')) {
+    setErrorMsg("Format téléphone invalide. Utilisez le mode email pour les adresses email.");
+    return;
+  }
+
+
+
     try {
       const res = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifiant: formData.telephone,  // Ici, identifiant = telephone
+          identifiant: loginMode === "email" ? formData.email : formData.telephone,
           mot_de_passe: formData.password,
         }),
         credentials: "include",
@@ -188,33 +164,54 @@ const AuthPage = () => {
 
 
       // Appel backend pour vérifier si c’est un vendeur et s’il a un profil boutique
-// 🕒 Attendre une courte durée pour que le cookie de session soit bien reçu
-setTimeout(async () => {
-  try {
-    const profilRes = await fetch("http://localhost:8000/api/profil-vendeur/", {
-      credentials: "include",
-    });
+      //  Attendre une courte durée pour que le cookie de session soit bien reçu
+      //  NOUVELLE LOGIQUE : Vérifier d'abord le type d'utilisateur
+    setTimeout(async () => {
+      try {
+        // Récupérer les infos utilisateur pour connaître son type
+        const userInfoRes = await fetch("http://localhost:8000/api/vendeur-info/", {
+          credentials: "include",
+        });
 
-    if (profilRes.status === 404) {
-      window.location.href = "/creer-boutique";
-    } else if (profilRes.ok) {
-      window.location.href = "/dashboard";
-    } else {
-      const data = await profilRes.json();
-      setErrorMsg(data?.error || "Erreur lors de la vérification du profil vendeur.");
-    }
+        if (userInfoRes.ok) {
+          const userInfo = await userInfoRes.json();
+          
+          // Redirection selon le type d'utilisateur
+          if (userInfo.type_utilisateur === "client") {
+            //  REDIRECTION CLIENT vers page client
+            window.location.href = "/client"; // ou "/shop" ou "/home-client"
+          } else if (userInfo.type_utilisateur === "vendeur") {
+            //  LOGIQUE VENDEUR INCHANGÉE
+            // Vérifier si le vendeur a un profil boutique
+            const profilRes = await fetch("http://localhost:8000/api/profil-vendeur/", {
+              credentials: "include",
+            });
+
+            if (profilRes.status === 404) {
+              window.location.href = "/creer-boutique";
+            } else if (profilRes.ok) {
+              window.location.href = "/dashboard";
+            } else {
+              const data = await profilRes.json();
+              setErrorMsg(data?.error || "Erreur lors de la vérification du profil vendeur.");
+            }
+          } else {
+            // Type d'utilisateur non reconnu
+            setErrorMsg("Type d'utilisateur non reconnu.");
+          }
+        } else {
+          // Si on ne peut pas récupérer les infos utilisateur
+          setErrorMsg("Erreur lors de la récupération des informations utilisateur.");
+        }
+      } catch (err) {
+        setErrorMsg("Erreur réseau lors de la vérification du profil utilisateur.");
+      }
+    }, 500);
+
   } catch (err) {
-    setErrorMsg("Erreur réseau lors de la vérification du profil vendeur.");
+    setErrorMsg(err.message);
   }
-}, 500); // attendre 500ms
-
-
-
-
-    } catch (err) {
-      setErrorMsg(err.message);
-    }
-  };
+};
 
   // Soumission signup
   const handleSignupSubmit = async (e) => {
@@ -275,6 +272,7 @@ setTimeout(async () => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setShowResetPassword(false); // cacher reset si on change de formulaire
+    setLoginMode("telephone"); // Ajoutez cette ligne
     setFormData({ nom: "", prenom: "", email: "", telephone: "", password: "" });
     resetMessages();
     setShowPassword(false);
@@ -348,15 +346,34 @@ setTimeout(async () => {
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div className="relative">
                   <input
-                    type="tel"
-                    name="telephone"
-                    placeholder="Téléphone"
-                    value={formData.telephone}
-                    onChange={handleInputChange}
+                    type={loginMode === "email" ? "email" : "tel"}
+                    name={loginMode === "email" ? "email" : "telephone"}
+                    placeholder={loginMode === "email" ? "Email" : "Téléphone"}
+                    value={loginMode === "email" ? formData.email : formData.telephone}
+                    onChange={loginMode === "telephone" ? (e) => {
+                      // Empêcher la saisie d'emails (contenant @) dans le champ téléphone
+                      if (e.target.value.includes('@')) {
+                        return; // Ne pas mettre à jour si ça contient @
+                      }
+                      handleInputChange(e);
+                    } : handleInputChange}
+                    onPaste={loginMode === "telephone" ? (e) => {
+                      // Empêcher le collage d'emails
+                      const pastedText = e.clipboardData.getData('text');
+                      if (pastedText.includes('@')) {
+                        e.preventDefault();
+                        setErrorMsg("Veuillez utiliser le mode email pour saisir une adresse email");
+                        setTimeout(() => setErrorMsg(null), 3000);
+                      }
+                    } : undefined}
                     required
                     className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
                   />
-                  <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  {loginMode === "email" ? 
+                    <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /> :
+                    <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  }
+
                 </div>
                 <div className="relative">
                   <input
@@ -395,6 +412,18 @@ setTimeout(async () => {
                 type="button"
               >
                 Mot de passe oublié ?
+              </button>
+
+              {/* Nouveau bouton de basculement */}
+              <button
+                onClick={() => setLoginMode(loginMode === "telephone" ? "email" : "telephone")}
+                className="mt-2 flex items-center justify-center text-blue-700 hover:text-blue-900 bg-transparent border-0 cursor-pointer mx-auto"
+                type="button"
+              >
+                {loginMode === "telephone" ? 
+                  <Mail className="w-5 h-5" /> : 
+                  <Phone className="w-5 h-5" />
+                }
               </button>
             </>
           )}

@@ -257,41 +257,13 @@ const ModernSidebar = ({ children, onAddProductClick, currentPage = 'products' }
       onClick: () => console.log('Navigate to Promotions')
     },
     {
-      id: 'account',
-      icon: User,
-      label: 'Account',
-      active: currentPage === 'account' || currentPage === 'profile' || currentPage === 'settings',
-      expandable: true,
-      expanded: expandedMenus.account,
-      submenu: [
-        {
-          id: 'profile',
-          label: 'Profile',
-          active: currentPage === 'profile',
-          onClick: () => console.log('Navigate to Profile')
-        },
-        {
-          id: 'settings',
-          label: 'Settings',
-          active: currentPage === 'settings',
-          onClick: () => console.log('Navigate to Settings')
-        },
-        {
-          id: 'logout',
-          label: 'Logout',
-          onClick: () => {
-            //  Fonction de déconnexion
-            fetch('http://localhost:8000/api/logout/', {
-              method: 'POST',
-              credentials: 'include'
-            }).finally(() => {
-              window.location.href = '/login';
-            });
-          },
-          danger: true
-        }
-      ]
+      id: 'settings',
+      icon: Settings, // Assure-toi d'importer "Settings" de lucide-react
+      label: 'Settings',
+      active: currentPage === 'settings',
+      onClick: () => window.location.href = '/settings'
     }
+
   ];
 
   const sidebarStyles = {
