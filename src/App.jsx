@@ -20,24 +20,25 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 
 //Client
 
-// import HomePage from './pages/client/ClientHomePage';
-// import ProductsPage from './pages/client/ProductsClientPage';
-// import ProductDetailPage from './pages/client/ProductDetailPage';
-// import CategoryPage from './pages/client/CategoryPage';
-// import CartPage from './pages/client/CartPage';
+
+import ProductsClientPage from './pages/client/ProductsClientPage';
+import ProductDetailPage from './pages/client/ProductDetailPage';
+import CategoriesPage from './pages/client/CategoriesPage';
+import CartPage from './pages/client/CartPage';
 // import CheckoutPage from './pages/client/CheckoutPage';
 // import OrdersPage from './pages/client/OrdersPage';
 // import FavoritesPage from './pages/client/FavoritesPage';
 // import ProfilePage from './pages/client/ProfilePage';
-// import ClientHomePage from './pages/client/ClientHomePage';
-// import ClientDashboard from './pages/client/ClientDashboard';
+import ClientHomePage from './pages/client/ClientHomePage';
+import ClientDashboard from './pages/client/ClientDashboard';
+import CategoryDetailPage from './pages/client/CategoryDetailPage';
 
 function App() {
   return (
     <Router>
       <Routes>
         {/* Default Redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
 
         {/* Dashboard Main */}
         <Route path="/dashboard" element={<VendeurDashboard />} />
@@ -67,7 +68,7 @@ function App() {
         <Route path="/orders/tracking/:orderId" element={<OrderTracking />} />
 
         {/* 👤 Client Pages */}
-        {/* <Route path="/client" element={<ClientDashboard />} /> */}
+        <Route path="/client-dashboard" element={<ClientDashboard />} />
         
         {/* 🔐 Auth Pages (commentées pour l'instant) */}
         {/* 
@@ -76,14 +77,28 @@ function App() {
         */}
         
         {/* 404 - Redirection vers dashboard si route non trouvée */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-
+        {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
 
         {/* Nouvelles routes Client */}
-        {/* <Route path="/" element={<ClientHomePage />} /> */}
-        {/* <Route path="/produits" element={<ProductsClientPage />} /> */}
-        {/* <Route path="/produits/:id" element={<ProductDetailPage />} /> */}
-        {/* <Route path="/categories/:id" element={<CategoryPage />} /> */}
+        <Route path="/" element={<ClientHomePage />} />
+        <Route path="/produits" element={<ProductsClientPage />} />
+        <Route path="/produits/:id" element={<ProductDetailPage />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/produits/categorie/:categoryId" element={<ProductsClientPage />} />
+        
+        {/* Routes avec paramètres */}
+        <Route path="/categories/:id" element={<CategoryDetailPage />} />        
+        {/* Routes filtres */}
+        <Route path="/recherche" element={<ProductsClientPage />} />
+
+{/* // Dans les routes : */}
+        <Route path="/panier" element={<CartPage />} />
+        
+        {/* Autres pages */}
+        {/* <Route path="/favoris" element={<div>Page Favoris - En construction</div>} />
+        <Route path="/panier" element={<div>Page Panier - En construction</div>} />
+        <Route path="/profil" element={<div>Page Profil - En construction</div>} /> */}
+        
         {/* <Route path="/panier" element={<CartPage />} /> */}
         {/* <Route path="/commande" element={<CheckoutPage />} /> */}
         {/* <Route path="/mes-commandes" element={<OrdersPage />} /> */}
