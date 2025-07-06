@@ -257,7 +257,7 @@ const AuthPage = () => {
 
       setSuccessMsg("Inscription réussie ! Connectez-vous.");
       if (typeUtilisateur === "vendeur") {
-        window.location.href = "/creer-boutique";  //  redirection immédiate vers le formulaire boutique
+        window.location.href = "/login";  //  redirection immédiate vers le formulaire boutique
       } else {
         setIsLogin(true);  // le client reste sur la page login
       }

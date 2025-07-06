@@ -41,7 +41,7 @@ function App() {
     <Router>
       <Routes>
         {/* Default Redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
 
         {/* Dashboard Main */}
         <Route path="/dashboard" element={<VendeurDashboard />} />
@@ -74,7 +74,7 @@ function App() {
         {/* <Route path="/orders/edit/:id" element={<OrderEdit />} /> */}
 
 
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* <Route path="/" element={<Navigate to="/login" />} /> */}
         <Route path="/login" element={<AuthPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
@@ -90,9 +90,9 @@ function App() {
 
         {/* <Route path="/client" element={<ClientPage />} /> */}
 
-        <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/settings" element={<SettingsPage />} />
+
         <Route path="/commandes" element={<OrdersList />} />
         <Route path="/orders/edit/:orderId" element={<OrderEdit />} />
         <Route path="/today-orders" element={<TodayOrders />} />
