@@ -1,20 +1,26 @@
-// src/pages/orders/OrderEdit.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import OrderForm from './OrderForm';
 
 const OrderEdit = () => {
-  const { id } = useParams();
+  const { orderId } = useParams();
   const navigate = useNavigate();
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!orderId) return;
+    
     setLoading(true);
-    fetch(`http://127.0.0.1:8000/api/commandes/${id}/`)
+    
+    // Using proxy path - Vite will forward to http://127.0.0.1:8000
+    fetch(`/api/commandes/${orderId}/`)
       .then(res => {
-        if (!res.ok) throw new Error('Commande introuvable');
+        console.log('Response status:', res.status);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
         return res.json();
       })
       .then(data => {
@@ -23,10 +29,12 @@ const OrderEdit = () => {
       })
       .catch(err => {
         console.error('Erreur chargement:', err);
-        alert('Erreur lors du chargement de la commande');
+        alert(`Erreur lors du chargement de la commande: ${err.message}`);
       })
-      .finally(() => setLoading(false));
-  }, [id]);
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [orderId]);
 
   const handleSubmit = async (updatedData) => {
     setIsSubmitting(true);
@@ -40,12 +48,12 @@ const OrderEdit = () => {
         
         // Conserver les données client originales (requis par l'API)
         client: orderData.client || {
-          nom: updatedData.client_nom,
-          prenom: updatedData.client_prenom,
-          adresse: updatedData.client_adresse,
-          ville: updatedData.client_ville,
-          code_postal: updatedData.client_code_postal,
-          pays: updatedData.client_pays
+          nom: updatedData.client_nom || '',
+          prenom: updatedData.client_prenom || '',
+          adresse: updatedData.client_adresse || '',
+          ville: updatedData.client_ville || '',
+          code_postal: updatedData.client_code_postal || '',
+          pays: updatedData.client_pays || ''
         },
         
         // Inclure les détails s'ils existent
@@ -54,24 +62,34 @@ const OrderEdit = () => {
 
       console.log('Données envoyées:', dataToSend);
 
-      const res = await fetch(`http://127.0.0.1:8000/api/commandes/${id}/`, {
+      // Using proxy path
+      const res = await fetch(`/api/commandes/${orderId}/`, {
         method: 'PUT',
         headers: { 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
         body: JSON.stringify(dataToSend),
       });
 
+      console.log('PUT Response status:', res.status);
+
       if (!res.ok) {
-        const errorData = await res.json();
-        console.error('Erreur API:', errorData);
-        throw new Error(`Erreur ${res.status}: ${JSON.stringify(errorData)}`);
+        let errorMessage = `HTTP ${res.status}: ${res.statusText}`;
+        try {
+          const errorData = await res.json();
+          console.error('Erreur API:', errorData);
+          errorMessage = JSON.stringify(errorData);
+        } catch (e) {
+          console.error('Could not parse error response');
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await res.json();
       console.log('Réponse API:', result);
       
-    //   alert('Commande mise à jour avec succès');
+      alert('Commande mise à jour avec succès');
       navigate('/commandes');
       
     } catch (err) {
@@ -82,8 +100,24 @@ const OrderEdit = () => {
     }
   };
 
-  if (loading) return <div>Chargement...</div>;
-  if (!orderData) return <div>Commande introuvable</div>;
+  if (loading) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <div>Chargement...</div>
+      </div>
+    );
+  }
+  
+  if (!orderData) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <div>Commande introuvable</div>
+        <button onClick={() => navigate('/commandes')}>
+          Retour aux commandes
+        </button>
+      </div>
+    );
+  }
 
   return (
     <OrderForm

@@ -27,7 +27,7 @@ const OrdersList = () => {
 
   const fetchOrders = () => {
     setLoading(true);
-    fetch('http://127.0.0.1:8000/api/commandes/')
+    fetch('/api/commandes/')
       .then(res => res.json())
       .then(data => setOrders(data.results || []))
       .catch(console.error)
@@ -43,23 +43,30 @@ const OrdersList = () => {
   );
 
   const handleEdit = (orderId) => {
+      console.log('ID envoyé pour édition:', orderId); // 👈 à ajouter
     navigate(`/orders/edit/${orderId}`);
   };
 
-  const handleDelete = (orderId) => {
+const handleDelete = (orderId) => {
     if (window.confirm(`Confirmez-vous la suppression de la commande #${orderId} ?`)) {
-      fetch(`http://127.0.0.1:8000/api/commandes/${orderId}/`, {
+      fetch(`/api/commandes/${orderId}/`, {  // ✅ Utiliser l'URL relative au lieu de l'absolue
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',  // ✅ Ajouter les headers
+        },
       })
         .then(res => {
           if (res.ok) {
             alert('Commande supprimée avec succès');
             fetchOrders();
           } else {
-            alert('Erreur lors de la suppression');
+            alert(`Erreur lors de la suppression: ${res.status}`);
           }
         })
-        .catch(() => alert('Erreur réseau'));
+        .catch((error) => {
+          console.error('Erreur réseau:', error);
+          alert('Erreur réseau');
+        });
     }
   };
 
@@ -199,7 +206,7 @@ const OrdersList = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: theme.spacing.xl }}>
             {filteredOrders.map(order => (
               <div key={order.id} style={{
-                background: '#fff',
+                background: '#F8FAFC',
                 borderRadius: theme.borderRadius.lg,
                 boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
                 padding: theme.spacing.lg,
@@ -231,7 +238,7 @@ const OrdersList = () => {
                   backgroundColor: getStatusColor(order.statut),
                   userSelect: 'none'
                 }}>
-                  {order.statut}
+                    Statut : {order.statut}
                 </div>
 
                 {/* Détails de la commande */}
@@ -266,10 +273,49 @@ const OrdersList = () => {
        
 
                 {/* Boutons Modifier / Supprimer */}
-                <div style={{ display: 'flex', gap: theme.spacing.md, marginTop: theme.spacing.md }}>
-                  <Button onClick={() => handleEdit(order.id)} style={{ flex: 1, background: '#ED8936', color: '#fff' }}>Modifier</Button>
-                  <Button onClick={() => handleDelete(order.id)} style={{ flex: 1, backgroundColor: '#E53E3E', color: '#fff' }}>Supprimer</Button>
-                </div>
+             <div
+  style={{
+    display: 'flex',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    flexWrap: 'wrap',
+  }}
+>
+  <Button
+    onClick={() => handleEdit(order.id)}
+    style={{
+      flex: 1,
+      minWidth: 120,
+      backgroundColor: '#ED8936',
+      color: '#fff',
+      padding: '8px 16px',
+      borderRadius: 8,
+      fontWeight: 'bold',
+      border: 'none',
+      cursor: 'pointer',
+    }}
+  >
+    Modifier
+  </Button>
+
+  <Button
+    onClick={() => handleDelete(order.id)}
+    style={{
+      flex: 1,
+      minWidth: 120,
+      backgroundColor: '#E53E3E',
+      color: '#fff',
+      padding: '8px 16px',
+      borderRadius: 8,
+      fontWeight: 'bold',
+      border: 'none',
+      cursor: 'pointer',
+    }}
+  >
+    Supprimer
+  </Button>
+</div>
+
               </div>
             ))}
           </div>
