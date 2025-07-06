@@ -34,7 +34,8 @@ const ProductDetailPage = () => {
       setError(null);
       
       const response = await fetchProduitById(id);
-      console.log('Product response:', response); // Debug
+      console.log('Product response:', response);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       
       let productData = null;
       
@@ -54,11 +55,16 @@ const ProductDetailPage = () => {
         return;
       }
       
+      console.log('Final product data:', productData);
+      console.log('Product images:', productData.images);
+      console.log('Product specifications:', productData.specifications);
+      
       setProduct(productData);
       
       // Sélectionner la première spécification par défaut si disponible
       if (productData.specifications && productData.specifications.length > 0) {
         const defaultSpec = productData.specifications.find(s => s.est_defaut) || productData.specifications[0];
+        console.log('Selected default spec:', defaultSpec);
         setSelectedSpec(defaultSpec);
       }
       
@@ -166,10 +172,12 @@ const ProductDetailPage = () => {
   const getProductImages = () => {
     let images = [];
     
-    console.log('Product data for images:', product); // Debug log
+    console.log('🖼️ === DÉBUT TRAITEMENT IMAGES ===');
+    console.log('Product data for images:', product);
     
-    // Ajouter l'image principale du produit si disponible
+    // Étape 1: Ajouter l'image principale du produit si disponible
     if (product.image_principale) {
+      console.log('✅ Image principale trouvée:', product.image_principale);
       images.push({ 
         id: 'main', 
         url_image: product.image_principale, 
@@ -177,48 +185,107 @@ const ProductDetailPage = () => {
         source: 'produit',
         titre: 'Image principale'
       });
+    } else {
+      console.log('❌ Aucune image principale trouvée');
     }
     
-    // Ajouter les images du produit si disponibles (based on your ImageProduit model)
+    // Étape 2: Ajouter les images du produit
     if (product.images && Array.isArray(product.images)) {
-      const productImages = product.images.map((img, index) => ({
-        id: img.id || `product-img-${index}`,
-        url_image: img.url_image, // From ImageProduit.url_image
-        est_principale: img.est_principale || false, // From ImageProduit.est_principale
-        ordre: img.ordre || 0, // From ImageProduit.ordre
-        source: 'produit',
-        titre: `Image produit ${index + 1}`,
-        ...img
-      }));
+      console.log(`✅ ${product.images.length} images produit trouvées:`, product.images);
+      const productImages = product.images.map((img, index) => {
+        console.log(`  - Image ${index + 1}:`, img);
+        return {
+          id: img.id || `product-img-${index}`,
+          url_image: img.url_image,
+          est_principale: img.est_principale || false,
+          ordre: img.ordre || 0,
+          source: 'produit',
+          titre: `Image produit ${index + 1}`,
+          ...img
+        };
+      });
       images = [...images, ...productImages];
+    } else {
+      console.log('❌ Aucune image produit trouvée ou structure incorrecte');
+      console.log('Structure images reçue:', typeof product.images, product.images);
     }
     
-    // Sort images by ordre field if available
+    // Étape 3: Traiter les spécifications et leurs images
+    if (product.specifications && Array.isArray(product.specifications)) {
+      console.log(`📋 ${product.specifications.length} spécifications trouvées`);
+      
+      product.specifications.forEach((spec, specIndex) => {
+        console.log(`🔧 Traitement spécification ${specIndex + 1}:`, spec);
+        
+        // Vérifier si la spécification a des images
+        if (spec.images && Array.isArray(spec.images)) {
+          console.log(`  ✅ ${spec.images.length} images trouvées pour ${spec.nom}:`, spec.images);
+          const specImages = spec.images.map((img, index) => {
+            console.log(`    - Image spec ${index + 1}:`, img);
+            return {
+              id: img.id || `spec-${spec.id}-img-${index}`,
+              url_image: img.url_image,
+              est_principale: img.est_principale || false,
+              ordre: img.ordre || 0,
+              source: 'specification',
+              spec_id: spec.id,
+              spec_nom: spec.nom,
+              titre: img.titre || `${spec.nom} - Image ${index + 1}`,
+              ...img
+            };
+          });
+          images = [...images, ...specImages];
+        } else {
+          console.log(`  ❌ Aucune image pour spécification ${spec.nom}`);
+          console.log(`  Structure images spec:`, typeof spec.images, spec.images);
+        }
+      });
+    } else {
+      console.log('❌ Aucune spécification trouvée');
+      console.log('Structure specifications reçue:', typeof product.specifications, product.specifications);
+    }
+    
+    console.log(`📊 Total images avant tri: ${images.length}`);
+    
+    // Étape 4: Trier les images par ordre puis par est_principale
     images.sort((a, b) => {
       const ordreA = a.ordre || 0;
       const ordreB = b.ordre || 0;
       if (ordreA !== ordreB) return ordreA - ordreB;
-      // If same ordre, put main image first
       if (a.est_principale && !b.est_principale) return -1;
       if (!a.est_principale && b.est_principale) return 1;
       return 0;
     });
     
-    // Remove duplicates based on URL
+    // Étape 5: Supprimer les doublons
     const uniqueImages = images.filter((image, index, self) => {
       const url = image.url_image;
-      if (!url) return false; // Exclude images without URL
+      if (!url) {
+        console.log('⚠️ Image sans URL ignorée:', image);
+        return false;
+      }
       return index === self.findIndex(img => img.url_image === url);
     });
     
-    console.log('Final processed images:', uniqueImages); // Debug log
+    console.log(`🎯 Images finales (${uniqueImages.length}):`, uniqueImages);
+    console.log('🖼️ === FIN TRAITEMENT IMAGES ===');
     
     return uniqueImages;
   };
 
-  // Handler pour changer de spécification
+  // Handler pour changer de spécification et mettre à jour les images
   const handleSpecChange = (spec) => {
     setSelectedSpec(spec);
+    
+    // Basculer automatiquement vers l'image de la spécification sélectionnée si disponible
+    const productImages = getProductImages();
+    const specImageIndex = productImages.findIndex(img => 
+      img.source === 'specification' && img.spec_id === spec.id
+    );
+    
+    if (specImageIndex !== -1) {
+      setSelectedImageIndex(specImageIndex);
+    }
   };
 
   if (loading) {
@@ -376,6 +443,23 @@ const ProductDetailPage = () => {
                 </div>
               )}
               
+              {/* Badge pour les images de spécification */}
+              {productImages[selectedImageIndex]?.source === 'specification' && (
+                <div style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  backgroundColor: '#3b82f6',
+                  color: '#ffffff',
+                  fontSize: '12px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  fontWeight: '500'
+                }}>
+                  🔧 {productImages[selectedImageIndex].spec_nom}
+                </div>
+              )}
+              
               {/* Navigation entre images */}
               {productImages.length > 1 && (
                 <>
@@ -507,6 +591,23 @@ const ProductDetailPage = () => {
                   >
                     {!image.url_image && '📦'}
                     
+                    {/* Badge pour indiquer la source de l'image */}
+                    {image.source === 'specification' && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '2px',
+                        right: '2px',
+                        backgroundColor: '#3b82f6',
+                        color: '#ffffff',
+                        fontSize: '8px',
+                        padding: '1px 3px',
+                        borderRadius: '2px',
+                        fontWeight: '500'
+                      }}>
+                        SPEC
+                      </div>
+                    )}
+                    
                     {/* Badge pour l'image principale */}
                     {image.est_principale && (
                       <div style={{
@@ -533,13 +634,17 @@ const ProductDetailPage = () => {
               <div style={{
                 marginTop: '12px',
                 padding: '8px 12px',
-                backgroundColor: '#f0fdf4',
+                backgroundColor: productImages[selectedImageIndex].source === 'specification' ? '#f0f4ff' : '#f0fdf4',
                 borderRadius: '6px',
                 fontSize: '12px',
-                color: '#10b981',
+                color: productImages[selectedImageIndex].source === 'specification' ? '#3b82f6' : '#10b981',
                 textAlign: 'center'
               }}>
-                📷 {productImages[selectedImageIndex].titre || 'Image du produit'}
+                {productImages[selectedImageIndex].source === 'specification' ? (
+                  <>📷 Image de la variante : {productImages[selectedImageIndex].spec_nom}</>
+                ) : (
+                  <>📷 {productImages[selectedImageIndex].titre || 'Image du produit'}</>
+                )}
               </div>
             )}
           </div>
@@ -710,6 +815,19 @@ const ProductDetailPage = () => {
                         <div>
                           <div style={{ fontWeight: '600', marginBottom: '4px' }}>
                             {spec.nom}
+                            {/* Indicateur d'images disponibles */}
+                            {spec.images && spec.images.length > 0 && (
+                              <span style={{
+                                marginLeft: '8px',
+                                fontSize: '12px',
+                                backgroundColor: '#3b82f6',
+                                color: '#ffffff',
+                                padding: '2px 6px',
+                                borderRadius: '4px'
+                              }}>
+                                📷 {spec.images.length} image{spec.images.length > 1 ? 's' : ''}
+                              </span>
+                            )}
                           </div>
                           <div style={{
                             fontSize: '14px',
