@@ -19,8 +19,6 @@ import AuthPage from './pages/AuthPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ChoixTypeUtilisateur from './pages/ChoixTypeUtilisateur'; // adapte le chemin selon ton dossier
 import CreerBoutique from './pages/CreerBoutique';
-// import ClientPage from './pages/ClientPage';
-import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 
 
