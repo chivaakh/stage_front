@@ -7,7 +7,7 @@ import HistoriqueMouvements from './pages/stock/HistoriqueMouvements';
 import RapportStock from './pages/stock/RapportStock';
 import Notifications from './pages/stock/NotificationsStock';
 
-// 🆕 Orders pages
+//  Orders pages
 import OrdersList from './pages/orders/OrdersList';
 import OrderEdit from './pages/orders/OrderEdit';
 import TodayOrders from './pages/orders/TodayOrders';
@@ -17,8 +17,11 @@ import OrdersArchives from './pages/orders/OrdersArchives';
 
 import AuthPage from './pages/AuthPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-
-//Client
+import ChoixTypeUtilisateur from './pages/ChoixTypeUtilisateur'; // adapte le chemin selon ton dossier
+import CreerBoutique from './pages/CreerBoutique';
+// import ClientPage from './pages/ClientPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
 
 import ProductsClientPage from './pages/client/ProductsClientPage';
@@ -45,11 +48,51 @@ function App() {
 
         {/* Stock Pages */}
         <Route path="/stock" element={<DashboardStock />} />
+        {/* <Route path="/stock/historique" element={<HistoriqueMouvements />} /> */}
+        {/* <Route path="/stock/rapport" element={<RapportStock />} /> */}
+        {/* <Route path="/stock/notifications" element={<Notifications />} /> */}
+
+        {/* 🧾 Orders Pages */}
+        <Route path="/commandes" element={<OrdersList />} />
+        {/* <Route path="/commandes/:id" element={<OrderDetails />} /> */}
+        <Route path="/products" element={< VendeurDashboard/>} />
+        <Route path="/orders/edit/:id" element={<OrderEdit />} />
+
+        {/* Dashboard Main */}
+        <Route path="/dashboard" element={<VendeurDashboard />} />
+
+        {/* Stock Pages */}
+        <Route path="/stock" element={<DashboardStock />} />
         <Route path="/stock/historique" element={<HistoriqueMouvements />} />
         <Route path="/stock/rapport" element={<RapportStock />} />
         <Route path="/stock/notifications" element={<Notifications />} />
 
         {/* 🧾 Orders Pages */}
+        {/* <Route path="/commandes" element={<OrdersList />} /> */}
+        {/* <Route path="/commandes/:id" element={<OrderDetails />} /> */}
+        <Route path="/products" element={< VendeurDashboard/>} />
+        {/* <Route path="/orders/edit/:id" element={<OrderEdit />} /> */}
+
+
+        {/* <Route path="/" element={<Navigate to="/login" />} /> */}
+        <Route path="/login" element={<AuthPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+        <Route
+          path="/choix-utilisateur"
+          element={<ChoixTypeUtilisateur onChoisir={(type) => {
+            console.log("Utilisateur a choisi :", type);
+            // Exemple : redirection après choix
+            window.location.href = type === 'vendeur' ? '/dashboard' : '/products';
+          }} />}
+        />
+        <Route path="/creer-boutique" element={<CreerBoutique />} />
+
+        {/* <Route path="/client" element={<ClientPage />} /> */}
+
+
+        <Route path="/settings" element={<SettingsPage />} />
+
         <Route path="/commandes" element={<OrdersList />} />
         <Route path="/orders/edit/:orderId" element={<OrderEdit />} />
         <Route path="/today-orders" element={<TodayOrders />} />

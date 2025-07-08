@@ -8,6 +8,8 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);  // <-- pour afficher le formulaire reset
+  const [signupMode, setSignupMode] = useState("telephone"); // ou "email"
+  const [loginMode, setLoginMode] = useState("telephone"); // "telephone" ou "email"
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -29,38 +31,6 @@ const AuthPage = () => {
   };
 
 
-  // // Facebook login success handler
-  // const handleFacebookLogin = async (response) => {
-  //   try {
-  //     if (!response.accessToken) {
-  //       throw new Error("Facebook login failed");
-  //     }
-
-  //     // You can send the response access token to your backend for further verification and user creation
-  //     const res = await fetch("http://localhost:8000/api/facebook-login/", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         accessToken: response.accessToken,
-  //       }),
-  //       credentials: "include",
-  //     });
-
-  //     const data = await res.json();
-
-  //     if (!res.ok) throw new Error(data.error || "Erreur serveur Facebook login");
-
-  //     setSuccessMsg("Connexion Facebook réussie !");
-  //     // TODO: redirect user or set logged in state
-  //   } catch (err) {
-  //     setErrorMsg(err.message);
-  //   }
-  // };
-
-  // // Facebook login error handler
-  // const handleFacebookError = () => {
-  //   setErrorMsg("Connexion Facebook échouée.");
-  // };
 
 
   useEffect(() => {
@@ -161,12 +131,19 @@ const AuthPage = () => {
     e.preventDefault();
     resetMessages();
 
+    if (loginMode === "telephone" && formData.telephone.includes('@')) {
+    setErrorMsg("Format téléphone invalide. Utilisez le mode email pour les adresses email.");
+    return;
+  }
+
+
+
     try {
       const res = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          identifiant: formData.telephone,  // Ici, identifiant = telephone
+          identifiant: loginMode === "email" ? formData.email : formData.telephone,
           mot_de_passe: formData.password,
         }),
         credentials: "include",
@@ -185,15 +162,74 @@ const AuthPage = () => {
       setSuccessMsg("Connexion réussie !");
       // TODO: redirection ou mise à jour état connecté ici
 
-    } catch (err) {
-      setErrorMsg(err.message);
-    }
-  };
+
+      // Appel backend pour vérifier si c’est un vendeur et s’il a un profil boutique
+      //  Attendre une courte durée pour que le cookie de session soit bien reçu
+      //  NOUVELLE LOGIQUE : Vérifier d'abord le type d'utilisateur
+    setTimeout(async () => {
+      try {
+        // Récupérer les infos utilisateur pour connaître son type
+        const userInfoRes = await fetch("http://localhost:8000/api/vendeur-info/", {
+          credentials: "include",
+        });
+
+        if (userInfoRes.ok) {
+          const userInfo = await userInfoRes.json();
+          
+          // Redirection selon le type d'utilisateur
+          if (userInfo.type_utilisateur === "client") {
+            //  REDIRECTION CLIENT vers page client
+            window.location.href = "/client"; // ou "/shop" ou "/home-client"
+          } else if (userInfo.type_utilisateur === "vendeur") {
+            //  LOGIQUE VENDEUR INCHANGÉE
+            // Vérifier si le vendeur a un profil boutique
+            const profilRes = await fetch("http://localhost:8000/api/profil-vendeur/", {
+              credentials: "include",
+            });
+
+            if (profilRes.status === 404) {
+              window.location.href = "/creer-boutique";
+            } else if (profilRes.ok) {
+              window.location.href = "/dashboard";
+            } else {
+              const data = await profilRes.json();
+              setErrorMsg(data?.error || "Erreur lors de la vérification du profil vendeur.");
+            }
+          } else {
+            // Type d'utilisateur non reconnu
+            setErrorMsg("Type d'utilisateur non reconnu.");
+          }
+        } else {
+          // Si on ne peut pas récupérer les infos utilisateur
+          setErrorMsg("Erreur lors de la récupération des informations utilisateur.");
+        }
+      } catch (err) {
+        setErrorMsg("Erreur réseau lors de la vérification du profil utilisateur.");
+      }
+    }, 500);
+
+  } catch (err) {
+    setErrorMsg(err.message);
+  }
+};
 
   // Soumission signup
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     resetMessages();
+
+    if (signupMode === "email" && !formData.email) {
+    setErrorMsg("L'email est requis pour cette méthode.");
+    return;
+    }
+
+
+    const typeUtilisateur = localStorage.getItem("type_utilisateur");
+
+    if (!typeUtilisateur) {
+      setErrorMsg("Veuillez d'abord choisir si vous êtes client ou vendeur.");
+      return;
+    }
 
     try {
       const res = await fetch("http://localhost:8000/api/signup/", {
@@ -205,6 +241,7 @@ const AuthPage = () => {
           email: formData.email || "",
           telephone: formData.telephone,
           mot_de_passe: formData.password,
+          type_utilisateur: typeUtilisateur,
         }),
       });
 
@@ -219,7 +256,11 @@ const AuthPage = () => {
       }
 
       setSuccessMsg("Inscription réussie ! Connectez-vous.");
-      setIsLogin(true);
+      if (typeUtilisateur === "vendeur") {
+        window.location.href = "/login";  //  redirection immédiate vers le formulaire boutique
+      } else {
+        setIsLogin(true);  // le client reste sur la page login
+      }
       setFormData({ nom: "", prenom: "", email: "", telephone: "", password: "" });
 
     } catch (err) {
@@ -231,6 +272,7 @@ const AuthPage = () => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setShowResetPassword(false); // cacher reset si on change de formulaire
+    setLoginMode("telephone"); // Ajoutez cette ligne
     setFormData({ nom: "", prenom: "", email: "", telephone: "", password: "" });
     resetMessages();
     setShowPassword(false);
@@ -258,8 +300,10 @@ const AuthPage = () => {
       >
 {/* Login form ou Reset form (exclusif) */}
         <div
-          className={`flex w-1/2 p-8 flex-col justify-center transition-transform duration-700 ease-in-out`}
-        >
+  className={`absolute top-0 left-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
+    isLogin ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none"
+  } flex`}
+>
           {showResetPassword ? (
             <>
               <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Réinitialiser le mot de passe</h2>
@@ -302,15 +346,34 @@ const AuthPage = () => {
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 <div className="relative">
                   <input
-                    type="tel"
-                    name="telephone"
-                    placeholder="Téléphone"
-                    value={formData.telephone}
-                    onChange={handleInputChange}
+                    type={loginMode === "email" ? "email" : "tel"}
+                    name={loginMode === "email" ? "email" : "telephone"}
+                    placeholder={loginMode === "email" ? "Email" : "Téléphone"}
+                    value={loginMode === "email" ? formData.email : formData.telephone}
+                    onChange={loginMode === "telephone" ? (e) => {
+                      // Empêcher la saisie d'emails (contenant @) dans le champ téléphone
+                      if (e.target.value.includes('@')) {
+                        return; // Ne pas mettre à jour si ça contient @
+                      }
+                      handleInputChange(e);
+                    } : handleInputChange}
+                    onPaste={loginMode === "telephone" ? (e) => {
+                      // Empêcher le collage d'emails
+                      const pastedText = e.clipboardData.getData('text');
+                      if (pastedText.includes('@')) {
+                        e.preventDefault();
+                        setErrorMsg("Veuillez utiliser le mode email pour saisir une adresse email");
+                        setTimeout(() => setErrorMsg(null), 3000);
+                      }
+                    } : undefined}
                     required
                     className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
                   />
-                  <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  {loginMode === "email" ? 
+                    <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" /> :
+                    <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  }
+
                 </div>
                 <div className="relative">
                   <input
@@ -350,15 +413,27 @@ const AuthPage = () => {
               >
                 Mot de passe oublié ?
               </button>
+
+              {/* Nouveau bouton de basculement */}
+              <button
+                onClick={() => setLoginMode(loginMode === "telephone" ? "email" : "telephone")}
+                className="mt-2 flex items-center justify-center text-blue-700 hover:text-blue-900 bg-transparent border-0 cursor-pointer mx-auto"
+                type="button"
+              >
+                {loginMode === "telephone" ? 
+                  <Mail className="w-5 h-5" /> : 
+                  <Phone className="w-5 h-5" />
+                }
+              </button>
             </>
           )}
         </div>
 
         {/* Signup form */}
         <div
-          className={`w-1/2 p-8 flex-col justify-center transition-transform duration-700 ease-in-out ${
-            isLogin ? "translate-x-full" : "translate-x-0"
-          } flex bg-white/20 backdrop-blur-lg h-full rounded-l-3xl`}
+          className={`absolute top-0 right-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
+            isLogin ? "translate-x-full opacity-0 pointer-events-none" : "translate-x-0 opacity-100 pointer-events-auto"
+          } flex`}
         >
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Inscription</h2>
           <form onSubmit={handleSignupSubmit} className="space-y-4">
@@ -387,22 +462,30 @@ const AuthPage = () => {
                 <User className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               </div>
             </div>
-            <div className="relative">
-              <input
-                type="email"
-                name="email"
-                placeholder="Email (optionnel)"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
-              />
-              <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            </div>
+            {signupMode === "email" && (
+              <div className="relative">
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email (obligatoire)"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                />
+                <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              </div>
+            )}
+
             <div className="relative">
               <input
                 type="tel"
                 name="telephone"
-                placeholder="Téléphone"
+                placeholder={
+                  signupMode === "telephone"
+                    ? "Téléphone (obligatoire)"
+                    : "Téléphone (secondaire obligatoire)"
+                }
                 value={formData.telephone}
                 onChange={handleInputChange}
                 required
@@ -410,6 +493,7 @@ const AuthPage = () => {
               />
               <Phone className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             </div>
+
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -522,6 +606,26 @@ const AuthPage = () => {
             >
               S'inscrire
             </button>
+            <div className="text-center mt-2">
+  {signupMode === "telephone" ? (
+    <button
+      type="button"
+      onClick={() => setSignupMode("email")}
+      className="text-blue-600 underline"
+    >
+      S'inscrire avec email
+    </button>
+  ) : (
+    <button
+      type="button"
+      onClick={() => setSignupMode("telephone")}
+      className="text-blue-600 underline"
+    >
+      S'inscrire avec téléphone
+    </button>
+  )}
+</div>
+
           </form>
         </div>
       </div>
