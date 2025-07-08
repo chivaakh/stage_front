@@ -91,110 +91,300 @@ const ClientHomePage = () => {
     }
   };
 
-  // Section Hero
-  const HeroSection = () => (
-    <section style={{
+  const styles = {
+    container: {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+      backgroundColor: '#f8fafc',
+      minHeight: '100vh'
+    },
+    heroSection: {
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       color: '#ffffff',
-      padding: '80px 0',
-      textAlign: 'center'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0 24px'
-      }}>
-        <h1 style={{
-          fontSize: '48px',
-          fontWeight: '700',
-          margin: '0 0 24px 0',
-          lineHeight: '1.2'
-        }}>
+      padding: '80px 24px',
+      textAlign: 'center',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    heroContainer: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      position: 'relative',
+      zIndex: 2
+    },
+    heroTitle: {
+      fontSize: '48px',
+      fontWeight: '700',
+      margin: '0 0 24px 0',
+      lineHeight: '1.2'
+    },
+    heroSubtitle: {
+      fontSize: '20px',
+      margin: '0 auto 40px auto',
+      opacity: 0.9,
+      maxWidth: '600px',
+      lineHeight: '1.5'
+    },
+    heroButtons: {
+      display: 'flex',
+      gap: '16px',
+      justifyContent: 'center',
+      flexWrap: 'wrap'
+    },
+    ctaButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '12px 24px',
+      backgroundColor: '#6366f1',
+      color: '#ffffff',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      textDecoration: 'none'
+    },
+    secondaryButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '12px 24px',
+      backgroundColor: '#ffffff',
+      color: '#6366f1',
+      border: '2px solid #ffffff',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      textDecoration: 'none'
+    },
+    section: {
+      padding: '80px 24px',
+      maxWidth: '1200px',
+      margin: '0 auto'
+    },
+    sectionHeader: {
+      textAlign: 'center',
+      marginBottom: '48px'
+    },
+    sectionTitle: {
+      fontSize: '36px',
+      fontWeight: '700',
+      color: '#1e293b',
+      margin: '0 0 16px 0'
+    },
+    sectionSubtitle: {
+      fontSize: '18px',
+      color: '#64748b',
+      margin: 0,
+      lineHeight: '1.6'
+    },
+    categoriesGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '24px'
+    },
+    categoryCard: {
+      backgroundColor: '#ffffff',
+      padding: '32px 24px',
+      borderRadius: '12px',
+      textAlign: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      border: '1px solid #e2e8f0'
+    },
+    categoryIcon: {
+      fontSize: '48px',
+      marginBottom: '16px',
+      display: 'block'
+    },
+    categoryName: {
+      fontSize: '18px',
+      fontWeight: '600',
+      color: '#1e293b',
+      margin: '0 0 8px 0'
+    },
+    categoryDescription: {
+      fontSize: '14px',
+      color: '#64748b',
+      margin: 0,
+      lineHeight: '1.4'
+    },
+    productsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '24px'
+    },
+    productCard: {
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      border: '1px solid #e2e8f0'
+    },
+    productImage: {
+      height: '200px',
+      backgroundColor: '#f1f5f9',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '48px',
+      color: '#94a3b8',
+      position: 'relative'
+    },
+    productContent: {
+      padding: '20px'
+    },
+    productName: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#1e293b',
+      margin: '0 0 8px 0',
+      lineHeight: '1.4'
+    },
+    productDescription: {
+      fontSize: '14px',
+      color: '#64748b',
+      margin: '0 0 16px 0',
+      lineHeight: '1.4',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical'
+    },
+    productFooter: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    productPrice: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    },
+    priceMain: {
+      fontSize: '18px',
+      fontWeight: '700',
+      color: '#1e293b'
+    },
+    priceRange: {
+      fontSize: '14px',
+      color: '#64748b'
+    },
+    addToCartButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px 16px',
+      backgroundColor: '#6366f1',
+      color: '#ffffff',
+      border: 'none',
+      borderRadius: '8px',
+      fontSize: '12px',
+      fontWeight: '600',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      gap: '6px'
+    },
+    emptyState: {
+      textAlign: 'center',
+      padding: '60px 24px'
+    },
+    emptyIcon: {
+      fontSize: '64px',
+      marginBottom: '16px',
+      opacity: 0.5,
+      display: 'block'
+    },
+    emptyTitle: {
+      fontSize: '20px',
+      fontWeight: '600',
+      color: '#1e293b',
+      margin: '0 0 8px 0'
+    },
+    emptyDescription: {
+      fontSize: '16px',
+      color: '#64748b',
+      margin: '0 0 24px 0',
+      lineHeight: '1.5'
+    },
+    loadingGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+      gap: '24px'
+    },
+    loadingCard: {
+      height: '200px',
+      backgroundColor: '#f1f5f9',
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0'
+    },
+    loadingProductGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+      gap: '24px'
+    },
+    loadingProductCard: {
+      height: '350px',
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0'
+    }
+  };
+
+  // Section Hero
+  const HeroSection = () => (
+    <section style={styles.heroSection}>
+      <div style={styles.heroContainer}>
+        <h1 style={styles.heroTitle}>
           Découvrez nos Produits Exceptionnels
         </h1>
-        <p style={{
-          fontSize: '20px',
-          margin: '0 0 40px 0',
-          opacity: 0.9,
-          maxWidth: '600px',
-          margin: '0 auto 40px auto'
-        }}>
+        <p style={styles.heroSubtitle}>
           Une collection unique de produits soigneusement sélectionnés pour vous offrir le meilleur
         </p>
-        <div style={{
-          display: 'flex',
-          gap: '16px',
-          justifyContent: 'center',
-          flexWrap: 'wrap'
-        }}>
+        <div style={styles.heroButtons}>
           <button
             onClick={() => navigate('/produits')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '12px 24px',
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
+            style={styles.ctaButton}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
+              e.target.style.backgroundColor = '#4f46e5';
+              e.target.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#3b82f6';
+              e.target.style.backgroundColor = '#6366f1';
+              e.target.style.transform = 'translateY(0)';
             }}
           >
             🛍️ Parcourir le Catalogue
           </button>
           <button
             onClick={() => navigate('/categories')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '12px 24px',
-              backgroundColor: '#6b7280',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
+            style={styles.secondaryButton}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#4b5563';
+              e.target.style.backgroundColor = '#f8fafc';
+              e.target.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#6b7280';
+              e.target.style.backgroundColor = '#ffffff';
+              e.target.style.transform = 'translateY(0)';
             }}
           >
             📂 Explorer les Catégories
           </button>
           <button
             onClick={() => navigate('/client-dashboard')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '12px 24px',
-              backgroundColor: '#8b5cf6',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
+            style={styles.secondaryButton}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#7c3aed';
+              e.target.style.backgroundColor = '#f8fafc';
+              e.target.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#8b5cf6';
+              e.target.style.backgroundColor = '#ffffff';
+              e.target.style.transform = 'translateY(0)';
             }}
           >
             📊 Mon Dashboard
@@ -206,453 +396,235 @@ const ClientHomePage = () => {
 
   // Section Catégories
   const CategoriesSection = () => (
-    <section style={{
-      padding: '80px 0',
-      backgroundColor: '#ffffff'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0 24px'
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <h2 style={{
-            fontSize: '36px',
-            fontWeight: '700',
-            color: '#1f2937',
-            margin: '0 0 16px 0'
-          }}>
-            Nos Catégories
-          </h2>
-          <p style={{
-            fontSize: '18px',
-            color: '#6b7280',
-            margin: 0
-          }}>
-            Explorez notre large gamme de produits
-          </p>
-        </div>
-
-        {loading ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px'
-          }}>
-            {[...Array(6)].map((_, i) => (
-              <div key={i} style={{
-                height: '200px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '16px',
-                animation: 'pulse 2s infinite'
-              }} />
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: '24px'
-          }}>
-            {categories.length > 0 ? categories.map(category => {
-              // Fonction pour obtenir l'icône basée sur le nom de la catégorie
-              const getCategoryIcon = (categoryName) => {
-                const name = categoryName.toLowerCase();
-                if (name.includes('électronique') || name.includes('electronique') || name.includes('tech')) return '📱';
-                if (name.includes('vêtement') || name.includes('vetement') || name.includes('mode') || name.includes('textile')) return '👕';
-                if (name.includes('maison') || name.includes('jardin') || name.includes('déco') || name.includes('deco')) return '🏠';
-                if (name.includes('sport') || name.includes('loisir') || name.includes('fitness')) return '⚽';
-                if (name.includes('livre') || name.includes('éducation') || name.includes('education')) return '📚';
-                if (name.includes('beauté') || name.includes('beaute') || name.includes('santé') || name.includes('sante') || name.includes('cosmétique')) return '💄';
-                if (name.includes('alimentaire') || name.includes('nourriture') || name.includes('cuisine')) return '🍎';
-                if (name.includes('automobile') || name.includes('voiture') || name.includes('auto')) return '🚗';
-                if (name.includes('jouet') || name.includes('enfant') || name.includes('bébé') || name.includes('bebe')) return '🧸';
-                if (name.includes('bijou') || name.includes('accessoire')) return '💎';
-                return '📦'; // Icône par défaut
-              };
-
-              return (
-                <div
-                  key={category.id}
-                  onClick={() => navigate(`/categories/${category.id}`)}
-                  style={{
-                    padding: '32px',
-                    backgroundColor: '#f8fafc',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    border: '1px solid #e5e7eb'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.backgroundColor = '#f8fafc';
-                  }}
-                >
-                  <div style={{
-                    fontSize: '48px',
-                    marginBottom: '16px'
-                  }}>
-                    {getCategoryIcon(category.nom)}
-                  </div>
-                  <h3 style={{
-                    fontSize: '20px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    margin: '0 0 8px 0'
-                  }}>
-                    {category.nom}
-                  </h3>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    margin: 0
-                  }}>
-                    {category.description || 'Découvrez cette catégorie'}
-                  </p>
-                </div>
-              );
-            }) : (
-              // Catégories par défaut si pas de données
-              [
-                { id: 1, nom: 'Électronique', icon: '📱' },
-                { id: 2, nom: 'Vêtements', icon: '👕' },
-                { id: 3, nom: 'Maison & Jardin', icon: '🏠' },
-                { id: 4, nom: 'Sport & Loisirs', icon: '⚽' },
-                { id: 5, nom: 'Livres', icon: '📚' },
-                { id: 6, nom: 'Beauté & Santé', icon: '💄' }
-              ].map(category => (
-                <div
-                  key={category.id}
-                  onClick={() => navigate(`/categories/${category.id}`)}
-                  style={{
-                    padding: '32px',
-                    backgroundColor: '#f8fafc',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    border: '1px solid #e5e7eb'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
-                    e.currentTarget.style.backgroundColor = '#ffffff';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.backgroundColor = '#f8fafc';
-                  }}
-                >
-                  <div style={{
-                    fontSize: '48px',
-                    marginBottom: '16px'
-                  }}>
-                    {category.icon}
-                  </div>
-                  <h3 style={{
-                    fontSize: '20px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    margin: '0 0 8px 0'
-                  }}>
-                    {category.nom}
-                  </h3>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    margin: 0
-                  }}>
-                    Découvrez cette catégorie
-                  </p>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+    <section style={styles.section}>
+      <div style={styles.sectionHeader}>
+        <h2 style={styles.sectionTitle}>
+          Nos Catégories
+        </h2>
+        <p style={styles.sectionSubtitle}>
+          Explorez notre large gamme de produits organisés par catégories
+        </p>
       </div>
-    </section>
-  );
 
-  // Section Produits (réutilisable)
-  const ProductsSection = ({ title, products, emptyMessage }) => (
-    <section style={{
-      padding: '80px 0',
-      backgroundColor: '#f8fafc'
-    }}>
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0 24px'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '48px'
-        }}>
-          <div>
-            <h2 style={{
-              fontSize: '36px',
-              fontWeight: '700',
-              color: '#1f2937',
-              margin: '0 0 8px 0'
-            }}>
-              {title}
-            </h2>
-            <p style={{
-              fontSize: '16px',
-              color: '#6b7280',
-              margin: 0
-            }}>
-              {emptyMessage}
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/produits')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '12px 24px',
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#2563eb';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#3b82f6';
-            }}
-          >
-            Voir tout →
-          </button>
+      {loading ? (
+        <div style={styles.loadingGrid}>
+          {[...Array(6)].map((_, i) => (
+            <div key={i} style={styles.loadingCard} />
+          ))}
         </div>
+      ) : (
+        <div style={styles.categoriesGrid}>
+          {categories.length > 0 ? categories.map(category => {
+            // Fonction pour obtenir l'icône basée sur le nom de la catégorie
+            const getCategoryIcon = (categoryName) => {
+              const name = categoryName.toLowerCase();
+              if (name.includes('électronique') || name.includes('electronique') || name.includes('tech')) return '📱';
+              if (name.includes('vêtement') || name.includes('vetement') || name.includes('mode') || name.includes('textile')) return '👕';
+              if (name.includes('maison') || name.includes('jardin') || name.includes('déco') || name.includes('deco')) return '🏠';
+              if (name.includes('sport') || name.includes('loisir') || name.includes('fitness')) return '⚽';
+              if (name.includes('livre') || name.includes('éducation') || name.includes('education')) return '📚';
+              if (name.includes('beauté') || name.includes('beaute') || name.includes('santé') || name.includes('sante') || name.includes('cosmétique')) return '💄';
+              if (name.includes('alimentaire') || name.includes('nourriture') || name.includes('cuisine')) return '🍎';
+              if (name.includes('automobile') || name.includes('voiture') || name.includes('auto')) return '🚗';
+              if (name.includes('jouet') || name.includes('enfant') || name.includes('bébé') || name.includes('bebe')) return '🧸';
+              if (name.includes('bijou') || name.includes('accessoire')) return '💎';
+              return '📦'; // Icône par défaut
+            };
 
-        {loading ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '24px'
-          }}>
-            {[...Array(8)].map((_, i) => (
-              <div key={i} style={{
-                height: '300px',
-                backgroundColor: '#ffffff',
-                borderRadius: '12px',
-                animation: 'pulse 2s infinite'
-              }} />
-            ))}
-          </div>
-        ) : products.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '24px'
-          }}>
-            {products.map(product => (
+            return (
               <div
-                key={product.id}
-                onClick={() => navigate(`/produits/${product.id}`)}
-                style={{
-                  backgroundColor: '#ffffff',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  border: '1px solid #e5e7eb'
-                }}
+                key={category.id}
+                onClick={() => navigate(`/categories/${category.id}`)}
+                style={styles.categoryCard}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
                 }}
               >
-                <div style={{
-                  height: '200px',
-                  backgroundColor: '#f3f4f6',
-                  backgroundImage: product.image_principale ? `url(${product.image_principale})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '48px',
-                  color: '#9ca3af'
-                }}>
-                  {!product.image_principale && '📦'}
-                </div>
-                <div style={{ padding: '20px' }}>
-                  <h3 style={{
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    color: '#1f2937',
-                    margin: '0 0 8px 0',
-                    lineHeight: '1.4'
-                  }}>
-                    {product.nom}
-                  </h3>
-                  <p style={{
-                    fontSize: '14px',
-                    color: '#6b7280',
-                    margin: '0 0 12px 0',
-                    lineHeight: '1.4',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical'
-                  }}>
-                    {product.description}
-                  </p>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div>
-                      <span style={{
-                        fontSize: '18px',
-                        fontWeight: '700',
-                        color: '#667eea'
-                      }}>
-                        {product.prix_min} MRU
-                      </span>
-                      {product.prix_max !== product.prix_min && (
-                        <span style={{
-                          fontSize: '14px',
-                          color: '#9ca3af',
-                          marginLeft: '8px'
-                        }}>
-                          - {product.prix_max} MRU
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product.id);
-                      }}
-                      disabled={addingToCart.has(product.id)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '12px 20px',
-                        backgroundColor: addingToCart.has(product.id) ? '#9ca3af' : '#2563eb',
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '20px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        cursor: addingToCart.has(product.id) ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.3s ease',
-                        gap: '6px',
-                        boxShadow: addingToCart.has(product.id) ? 'none' : '0 3px 12px rgba(37, 99, 235, 0.3)',
-                        transform: 'translateY(0)'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!addingToCart.has(product.id)) {
-                          e.target.style.backgroundColor = '#1d4ed8';
-                          e.target.style.transform = 'translateY(-1px)';
-                          e.target.style.boxShadow = '0 5px 16px rgba(37, 99, 235, 0.4)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!addingToCart.has(product.id)) {
-                          e.target.style.backgroundColor = '#2563eb';
-                          e.target.style.transform = 'translateY(0)';
-                          e.target.style.boxShadow = '0 3px 12px rgba(37, 99, 235, 0.3)';
-                        }
-                      }}
-                    >
-                      {addingToCart.has(product.id) ? '⏳' : '🛒'} Ajouter
-                    </button>
-                  </div>
-                </div>
+                <span style={styles.categoryIcon}>
+                  {getCategoryIcon(category.nom)}
+                </span>
+                <h3 style={styles.categoryName}>
+                  {category.nom}
+                </h3>
+                <p style={styles.categoryDescription}>
+                  {category.description || 'Découvrez cette catégorie'}
+                </p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '60px 0'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📦</div>
-            <h3 style={{
-              fontSize: '20px',
-              fontWeight: '600',
-              color: '#1f2937',
-              margin: '0 0 8px 0'
-            }}>
-              Aucun produit disponible
-            </h3>
-            <p style={{
-              fontSize: '16px',
-              color: '#6b7280',
-              margin: '0 0 24px 0'
-            }}>
-              Cette section ne contient pas encore de produits.
-            </p>
-            <button
-              onClick={() => navigate('/produits')}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '12px 24px',
-                backgroundColor: '#3b82f6',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '500',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
+            );
+          }) : (
+            // Catégories par défaut si pas de données
+            [
+              { id: 1, nom: 'Électronique', icon: '📱' },
+              { id: 2, nom: 'Vêtements', icon: '👕' },
+              { id: 3, nom: 'Maison & Jardin', icon: '🏠' },
+              { id: 4, nom: 'Sport & Loisirs', icon: '⚽' },
+              { id: 5, nom: 'Livres', icon: '📚' },
+              { id: 6, nom: 'Beauté & Santé', icon: '💄' }
+            ].map(category => (
+              <div
+                key={category.id}
+                onClick={() => navigate(`/categories/${category.id}`)}
+                style={styles.categoryCard}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-8px)';
+                  e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span style={styles.categoryIcon}>
+                  {category.icon}
+                </span>
+                <h3 style={styles.categoryName}>
+                  {category.nom}
+                </h3>
+                <p style={styles.categoryDescription}>
+                  Découvrez cette catégorie
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </section>
+  );
+
+  // Section Produits (réutilisable)
+  const ProductsSection = ({ title, products, emptyMessage }) => (
+    <section style={{ ...styles.section, backgroundColor: '#ffffff' }}>
+      <div style={styles.sectionHeader}>
+        <h2 style={styles.sectionTitle}>
+          {title}
+        </h2>
+        <p style={styles.sectionSubtitle}>
+          {emptyMessage}
+        </p>
+      </div>
+
+      {loading ? (
+        <div style={styles.loadingProductGrid}>
+          {[...Array(8)].map((_, i) => (
+            <div key={i} style={styles.loadingProductCard} />
+          ))}
+        </div>
+      ) : products.length > 0 ? (
+        <div style={styles.productsGrid}>
+          {products.map(product => (
+            <div
+              key={product.id}
+              onClick={() => navigate(`/produits/${product.id}`)}
+              style={styles.productCard}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#2563eb';
+                e.currentTarget.style.transform = 'translateY(-8px)';
+                e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.15)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#3b82f6';
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              🔍 Voir tous les produits
-            </button>
-          </div>
-        )}
-      </div>
+              <div style={{
+                ...styles.productImage,
+                backgroundImage: product.image_principale ? `url(${product.image_principale})` : 'none'
+              }}>
+                {!product.image_principale && '📦'}
+              </div>
+              <div style={styles.productContent}>
+                <h3 style={styles.productName}>
+                  {product.nom}
+                </h3>
+                <p style={styles.productDescription}>
+                  {product.description}
+                </p>
+                <div style={styles.productFooter}>
+                  <div style={styles.productPrice}>
+                    <span style={styles.priceMain}>
+                      {product.prix_min} MRU
+                    </span>
+                    {product.prix_max !== product.prix_min && (
+                      <span style={styles.priceRange}>
+                        - {product.prix_max} MRU
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(product.id);
+                    }}
+                    disabled={addingToCart.has(product.id)}
+                    style={{
+                      ...styles.addToCartButton,
+                      backgroundColor: addingToCart.has(product.id) ? '#94a3b8' : '#6366f1',
+                      cursor: addingToCart.has(product.id) ? 'not-allowed' : 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!addingToCart.has(product.id)) {
+                        e.target.style.backgroundColor = '#4f46e5';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!addingToCart.has(product.id)) {
+                        e.target.style.backgroundColor = '#6366f1';
+                      }
+                    }}
+                  >
+                    {addingToCart.has(product.id) ? '⏳' : '🛒'} Ajouter
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={styles.emptyState}>
+          <span style={styles.emptyIcon}>📦</span>
+          <h3 style={styles.emptyTitle}>
+            Aucun produit disponible
+          </h3>
+          <p style={styles.emptyDescription}>
+            Cette section ne contient pas encore de produits.
+          </p>
+          <button
+            onClick={() => navigate('/produits')}
+            style={styles.ctaButton}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#4f46e5';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#6366f1';
+            }}
+          >
+            🔍 Voir tous les produits
+          </button>
+        </div>
+      )}
     </section>
   );
 
   return (
     <ClientLayout currentPage="home">
-      <HeroSection />
-      <CategoriesSection />
-      <ProductsSection 
-        title="Nouveautés" 
-        products={nouveautes}
-        emptyMessage="Découvrez nos derniers produits"
-      />
-      <ProductsSection 
-        title="Produits Populaires" 
-        products={populaires}
-        emptyMessage="Les produits les plus appréciés par nos clients"
-      />
+      <div style={styles.container}>
+        <HeroSection />
+        <CategoriesSection />
+        <ProductsSection 
+          title="Nouveautés" 
+          products={nouveautes}
+          emptyMessage="Découvrez nos derniers produits ajoutés à notre catalogue"
+        />
+        <ProductsSection 
+          title="Produits Populaires" 
+          products={populaires}
+          emptyMessage="Les produits les plus appréciés par nos clients"
+        />
+      </div>
     </ClientLayout>
   );
 };
