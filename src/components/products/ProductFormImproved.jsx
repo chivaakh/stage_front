@@ -1,21 +1,25 @@
-// src/components/products/ProductFormExtended.jsx - VERSION CORRIGÉE
+// src/components/products/ProductFormImproved.jsx
 import { useState, useEffect } from 'react';
 import { Modal, Button, Input, Textarea } from '../ui';
 import ImageUpload from '../ui/ImageUpload';
 import { PlusIcon, DeleteIcon } from '../icons';
+import { useCategories } from '../../hooks/useCategories';
 import { theme } from '../../styles/theme';
 
-const ProductFormExtended = ({ 
+const ProductFormImproved = ({ 
   isOpen, 
   onClose, 
   onSubmit, 
   initialData = null,
   isLoading = false 
 }) => {
+  const { categories, loading: categoriesLoading } = useCategories();
+  
   const [formData, setFormData] = useState({
     nom: '',
     description: '',
     reference: '',
+    categorie: '', // ✅ AJOUT CATÉGORIE
     images: [],
     specifications: []
   });
@@ -28,6 +32,7 @@ const ProductFormExtended = ({
         nom: initialData.nom || '',
         description: initialData.description || '',
         reference: initialData.reference || '',
+        categorie: initialData.categorie?.id || '', // ✅ RÉCUPÉRER ID CATÉGORIE
         images: initialData.images || [],
         specifications: initialData.specifications || []
       });
@@ -36,6 +41,7 @@ const ProductFormExtended = ({
         nom: '',
         description: '',
         reference: '',
+        categorie: '',
         images: [],
         specifications: []
       });
@@ -56,6 +62,10 @@ const ProductFormExtended = ({
 
     if (!formData.reference.trim()) {
       newErrors.reference = 'La référence est obligatoire';
+    }
+
+    if (!formData.categorie) {
+      newErrors.categorie = 'La catégorie est obligatoire';
     }
 
     // Validation des spécifications
@@ -92,6 +102,7 @@ const ProductFormExtended = ({
       nom: '',
       description: '',
       reference: '',
+      categorie: '',
       images: [],
       specifications: []
     });
@@ -114,7 +125,7 @@ const ProductFormExtended = ({
     }
   };
 
-  // Gestion des images
+  // Gestion des images (même code que précédemment)
   const addImage = () => {
     setFormData(prev => ({
       ...prev,
@@ -159,7 +170,7 @@ const ProductFormExtended = ({
     }
   };
 
-  // Gestion des spécifications
+  // Gestion des spécifications (même code que précédemment)
   const addSpecification = () => {
     setFormData(prev => ({
       ...prev,
@@ -209,7 +220,7 @@ const ProductFormExtended = ({
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        height: '85vh', // ✅ HAUTEUR FIXE
+        height: '85vh',
         overflow: 'hidden' 
       }}>
         {/* En-tête fixe */}
@@ -217,7 +228,7 @@ const ProductFormExtended = ({
           borderBottom: `1px solid ${theme.colors.gray[300]}`,
           paddingBottom: theme.spacing.md,
           marginBottom: 0,
-          flexShrink: 0 // ✅ NE PAS RÉTRÉCIR
+          flexShrink: 0
         }}>
           <h2 style={{
             fontSize: '24px',
@@ -260,7 +271,7 @@ const ProductFormExtended = ({
         {/* Contenu scrollable */}
         <div style={{
           flex: 1,
-          overflowY: 'auto', // ✅ SCROLL UNIQUEMENT ICI
+          overflowY: 'auto',
           padding: `${theme.spacing.lg} 0`,
           marginBottom: theme.spacing.lg
         }}>
@@ -298,10 +309,55 @@ const ProductFormExtended = ({
                   required
                   disabled={isLoading}
                 />
+
+                {/* ✅ NOUVEAU : SELECT POUR CATÉGORIE */}
+                <div style={{ marginBottom: theme.spacing.lg }}>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: theme.spacing.sm,
+                    fontWeight: '500',
+                    color: theme.colors.gray[700]
+                  }}>
+                    Catégorie *
+                  </label>
+                  <select
+                    value={formData.categorie}
+                    onChange={(e) => handleChange('categorie', e.target.value)}
+                    disabled={isLoading || categoriesLoading}
+                    style={{
+                      width: '100%',
+                      padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+                      border: `1px solid ${errors.categorie ? '#dc2626' : theme.colors.gray[300]}`,
+                      borderRadius: theme.borderRadius.md,
+                      fontSize: '14px',
+                      outline: 'none',
+                      backgroundColor: theme.colors.white,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">
+                      {categoriesLoading ? 'Chargement...' : 'Sélectionnez une catégorie'}
+                    </option>
+                    {categories.map(cat => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.nom}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.categorie && (
+                    <div style={{
+                      color: '#dc2626',
+                      fontSize: '12px',
+                      marginTop: theme.spacing.xs
+                    }}>
+                      {errors.categorie}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Onglet Images */}
+            {/* Onglet Images - même code que précédemment */}
             {activeTab === 'images' && (
               <div>
                 <div style={{
@@ -309,7 +365,7 @@ const ProductFormExtended = ({
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: theme.spacing.lg,
-                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                  padding: `0 ${theme.spacing.md}`
                 }}>
                   <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
                     Images du produit
@@ -329,7 +385,7 @@ const ProductFormExtended = ({
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: theme.spacing.lg,
-                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                  padding: `0 ${theme.spacing.md}`
                 }}>
                   {formData.images.map((image, index) => (
                     <ImageUpload
@@ -369,7 +425,7 @@ const ProductFormExtended = ({
               </div>
             )}
 
-            {/* Onglet Spécifications */}
+            {/* Onglet Spécifications - même code que précédemment */}
             {activeTab === 'specifications' && (
               <div>
                 <div style={{
@@ -377,7 +433,7 @@ const ProductFormExtended = ({
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: theme.spacing.lg,
-                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                  padding: `0 ${theme.spacing.md}`
                 }}>
                   <h3 style={{ margin: 0, color: theme.colors.gray[700] }}>
                     Spécifications du produit
@@ -394,7 +450,7 @@ const ProductFormExtended = ({
                 </div>
 
                 <div style={{ 
-                  padding: `0 ${theme.spacing.md}` // ✅ PADDING POUR ÉVITER LE DÉBORDEMENT
+                  padding: `0 ${theme.spacing.md}`
                 }}>
                   {formData.specifications.map((spec, index) => (
                     <div
@@ -522,12 +578,12 @@ const ProductFormExtended = ({
           </form>
         </div>
 
-        {/* ✅ BOUTONS FIXES EN BAS */}
+        {/* Boutons fixes en bas */}
         <div style={{
           borderTop: `1px solid ${theme.colors.gray[300]}`,
           padding: `${theme.spacing.lg} ${theme.spacing.md} 0`,
           backgroundColor: theme.colors.white,
-          flexShrink: 0 // ✅ NE PAS RÉTRÉCIR
+          flexShrink: 0
         }}>
           <div style={{
             display: 'flex',
@@ -556,4 +612,4 @@ const ProductFormExtended = ({
   );
 };
 
-export default ProductFormExtended;
+export default ProductFormImproved;
