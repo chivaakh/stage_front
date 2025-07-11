@@ -68,3 +68,38 @@ export const DeleteIcon = ({ size = 16, ...props }) => (
     />
   </svg>
 );
+
+// ✅ NOUVELLES ICÔNES AJOUTÉES
+export const ChevronLeftIcon = ({ size = 20, ...props }) => (
+  <svg 
+    style={{ width: `${size}px`, height: `${size}px` }} 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      strokeWidth={2} 
+      d="M15 19l-7-7 7-7" 
+    />
+  </svg>
+);
+
+export const ChevronRightIcon = ({ size = 20, ...props }) => (
+  <svg 
+    style={{ width: `${size}px`, height: `${size}px` }} 
+    fill="none" 
+    stroke="currentColor" 
+    viewBox="0 0 24 24"
+    {...props}
+  >
+    <path 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      strokeWidth={2} 
+      d="M9 5l7 7-7 7" 
+    />
+  </svg>
+);

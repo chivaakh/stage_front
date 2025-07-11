@@ -20,6 +20,7 @@ const CartPage = () => {
   });
   const [loading, setLoading] = useState(true);
   const [updatingItems, setUpdatingItems] = useState(new Set());
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadCartData();
@@ -28,25 +29,48 @@ const CartPage = () => {
   const loadCartData = async () => {
     try {
       setLoading(true);
-      const [cartResponse, summaryResponse] = await Promise.all([
-        fetchPanier().catch(() => ({ data: { results: [] } })),
-        resumePanier().catch(() => ({ data: { total_items: 0, total_prix: 0, nombre_articles: 0 } }))
+      setError(null);
+      
+      // Charger les données du panier avec gestion d'erreur améliorée
+      const [cartResponse, summaryResponse] = await Promise.allSettled([
+        fetchPanier(),
+        resumePanier()
       ]);
 
-      // Gérer le format API
+      // Traiter la réponse du panier
       let cartData = [];
-      if (cartResponse.data) {
-        if (cartResponse.data.results && Array.isArray(cartResponse.data.results)) {
-          cartData = cartResponse.data.results;
-        } else if (Array.isArray(cartResponse.data)) {
-          cartData = cartResponse.data;
+      if (cartResponse.status === 'fulfilled' && cartResponse.value?.data) {
+        const responseData = cartResponse.value.data;
+        if (responseData.results && Array.isArray(responseData.results)) {
+          cartData = responseData.results;
+        } else if (Array.isArray(responseData)) {
+          cartData = responseData;
+        }
+      } else {
+        console.warn('Échec du chargement du panier:', cartResponse.reason);
+      }
+
+      // Traiter la réponse du résumé
+      let summaryData = { total_items: 0, total_prix: 0, nombre_articles: 0 };
+      if (summaryResponse.status === 'fulfilled' && summaryResponse.value?.data) {
+        summaryData = summaryResponse.value.data;
+      } else {
+        console.warn('Échec du chargement du résumé:', summaryResponse.reason);
+        // Calculer le résumé à partir des articles si disponibles
+        if (cartData.length > 0) {
+          summaryData = {
+            total_items: cartData.length,
+            total_prix: cartData.reduce((sum, item) => sum + (parseFloat(item.prix_total) || 0), 0),
+            nombre_articles: cartData.reduce((sum, item) => sum + (item.quantite || 0), 0)
+          };
         }
       }
 
       setCartItems(cartData);
-      setCartSummary(summaryResponse.data);
+      setCartSummary(summaryData);
     } catch (error) {
       console.error('Erreur chargement panier:', error);
+      setError('Impossible de charger votre panier. Veuillez réessayer.');
       setCartItems([]);
     } finally {
       setLoading(false);
@@ -63,7 +87,16 @@ const CartPage = () => {
       await loadCartData();
     } catch (error) {
       console.error('Erreur modification quantité:', error);
-      alert('Erreur lors de la modification de la quantité');
+      
+      // Messages d'erreur plus spécifiques
+      let errorMessage = 'Erreur lors de la modification de la quantité';
+      if (error.response?.status === 400) {
+        errorMessage = 'Quantité invalide ou stock insuffisant';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Article non trouvé dans le panier';
+      }
+      
+      alert(errorMessage);
     } finally {
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
@@ -83,7 +116,13 @@ const CartPage = () => {
       await loadCartData();
     } catch (error) {
       console.error('Erreur suppression article:', error);
-      alert('Erreur lors de la suppression');
+      
+      let errorMessage = 'Erreur lors de la suppression';
+      if (error.response?.status === 404) {
+        errorMessage = 'Article déjà supprimé du panier';
+      }
+      
+      alert(errorMessage);
     } finally {
       setUpdatingItems(prev => {
         const newSet = new Set(prev);
@@ -103,7 +142,13 @@ const CartPage = () => {
     } catch (error) {
       console.error('Erreur vidage panier:', error);
       alert('Erreur lors du vidage du panier');
+      setLoading(false);
     }
+  };
+
+  const formatPrice = (price) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return isNaN(numPrice) ? '0' : numPrice.toLocaleString();
   };
 
   // Composant d'article du panier
@@ -122,21 +167,25 @@ const CartPage = () => {
         transition: 'opacity 0.2s ease'
       }}>
         {/* Image produit */}
-        <div style={{
-          width: '120px',
-          height: '120px',
-          backgroundColor: '#f3f4f6',
-          borderRadius: '8px',
-          backgroundImage: item.produit_image ? `url(${item.produit_image})` : 'none',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '32px',
-          color: '#9ca3af',
-          flexShrink: 0
-        }}>
+        <div 
+          style={{
+            width: '120px',
+            height: '120px',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '8px',
+            backgroundImage: item.produit_image ? `url(${item.produit_image})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '32px',
+            color: '#9ca3af',
+            flexShrink: 0,
+            cursor: 'pointer'
+          }}
+          onClick={() => item.produit_id && navigate(`/produits/${item.produit_id}`)}
+        >
           {!item.produit_image && '📦'}
         </div>
 
@@ -149,25 +198,31 @@ const CartPage = () => {
             margin: '0 0 8px 0',
             cursor: 'pointer'
           }}
-          onClick={() => navigate(`/produits/${item.specification}`)}
+          onClick={() => item.produit_id && navigate(`/produits/${item.produit_id}`)}
           >
-            {item.produit_nom}
+            {item.produit_nom || 'Produit sans nom'}
           </h3>
           
-          <p style={{
-            fontSize: '14px',
-            color: '#6b7280',
-            margin: '0 0 8px 0'
-          }}>
-            Variante: {item.specification_nom}
-          </p>
+          {item.specification_nom && (
+            <p style={{
+              fontSize: '14px',
+              color: '#6b7280',
+              margin: '0 0 8px 0'
+            }}>
+              Variante: {item.specification_nom}
+            </p>
+          )}
           
           <p style={{
             fontSize: '14px',
-            color: '#6b7280',
-            margin: '0 0 16px 0'
+            color: item.stock_disponible > 0 ? '#10b981' : '#ef4444',
+            margin: '0 0 16px 0',
+            fontWeight: '500'
           }}>
-            Stock disponible: {item.stock_disponible}
+            {item.stock_disponible > 0 ? 
+              `Stock disponible: ${item.stock_disponible}` : 
+              'Rupture de stock'
+            }
           </p>
 
           {/* Contrôles quantité */}
@@ -186,12 +241,23 @@ const CartPage = () => {
                 border: '1px solid #d1d5db',
                 backgroundColor: '#ffffff',
                 color: '#374151',
-                cursor: item.quantite <= 1 ? 'not-allowed' : 'pointer',
+                cursor: (item.quantite <= 1 || isUpdating) ? 'not-allowed' : 'pointer',
                 fontSize: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                opacity: item.quantite <= 1 ? 0.5 : 1
+                opacity: (item.quantite <= 1 || isUpdating) ? 0.5 : 1,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (item.quantite > 1 && !isUpdating) {
+                  e.target.style.backgroundColor = '#f3f4f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (item.quantite > 1 && !isUpdating) {
+                  e.target.style.backgroundColor = '#ffffff';
+                }
               }}
             >
               −
@@ -217,12 +283,23 @@ const CartPage = () => {
                 border: '1px solid #d1d5db',
                 backgroundColor: '#ffffff',
                 color: '#374151',
-                cursor: item.quantite >= item.stock_disponible ? 'not-allowed' : 'pointer',
+                cursor: (item.quantite >= item.stock_disponible || isUpdating) ? 'not-allowed' : 'pointer',
                 fontSize: '18px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                opacity: item.quantite >= item.stock_disponible ? 0.5 : 1
+                opacity: (item.quantite >= item.stock_disponible || isUpdating) ? 0.5 : 1,
+                transition: 'all 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                if (item.quantite < item.stock_disponible && !isUpdating) {
+                  e.target.style.backgroundColor = '#f3f4f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (item.quantite < item.stock_disponible && !isUpdating) {
+                  e.target.style.backgroundColor = '#ffffff';
+                }
               }}
             >
               +
@@ -242,16 +319,16 @@ const CartPage = () => {
             <div style={{
               fontSize: '18px',
               fontWeight: '700',
-              color: '#667eea',
+              color: '#3b82f6',
               marginBottom: '4px'
             }}>
-              {item.prix_total} MRU
+              {formatPrice(item.prix_total)} MRU
             </div>
             <div style={{
               fontSize: '14px',
               color: '#6b7280'
             }}>
-              {item.prix_unitaire} MRU × {item.quantite}
+              {formatPrice(item.prix_unitaire)} MRU × {item.quantite}
             </div>
           </div>
 
@@ -265,14 +342,19 @@ const CartPage = () => {
               border: '1px solid #fecaca',
               borderRadius: '6px',
               fontSize: '12px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              cursor: isUpdating ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s ease',
+              opacity: isUpdating ? 0.5 : 1
             }}
             onMouseEnter={(e) => {
-              e.target.style.backgroundColor = '#fee2e2';
+              if (!isUpdating) {
+                e.target.style.backgroundColor = '#fee2e2';
+              }
             }}
             onMouseLeave={(e) => {
-              e.target.style.backgroundColor = '#fef2f2';
+              if (!isUpdating) {
+                e.target.style.backgroundColor = '#fef2f2';
+              }
             }}
           >
             🗑️ Supprimer
@@ -307,10 +389,10 @@ const CartPage = () => {
         marginBottom: '12px'
       }}>
         <span style={{ color: '#6b7280' }}>
-          Articles ({cartSummary.total_items})
+          Articles ({cartSummary.nombre_articles})
         </span>
         <span style={{ fontWeight: '600' }}>
-          {cartSummary.total_prix} MRU
+          {formatPrice(cartSummary.total_prix)} MRU
         </span>
       </div>
 
@@ -344,9 +426,9 @@ const CartPage = () => {
         <span style={{
           fontSize: '20px',
           fontWeight: '700',
-          color: '#667eea'
+          color: '#3b82f6'
         }}>
-          {cartSummary.total_prix} MRU
+          {formatPrice(cartSummary.total_prix)} MRU
         </span>
       </div>
 
@@ -356,7 +438,7 @@ const CartPage = () => {
         style={{
           width: '100%',
           padding: '16px',
-          backgroundColor: cartItems.length === 0 ? '#d1d5db' : '#667eea',
+          backgroundColor: cartItems.length === 0 ? '#d1d5db' : '#3b82f6',
           color: '#ffffff',
           border: 'none',
           borderRadius: '8px',
@@ -368,16 +450,16 @@ const CartPage = () => {
         }}
         onMouseEnter={(e) => {
           if (cartItems.length > 0) {
-            e.target.style.backgroundColor = '#5b6ee8';
+            e.target.style.backgroundColor = '#2563eb';
           }
         }}
         onMouseLeave={(e) => {
           if (cartItems.length > 0) {
-            e.target.style.backgroundColor = '#667eea';
+            e.target.style.backgroundColor = '#3b82f6';
           }
         }}
       >
-        🛒 Commander
+        {cartItems.length === 0 ? 'Panier vide' : '🛒 Commander'}
       </button>
 
       <button
@@ -386,15 +468,15 @@ const CartPage = () => {
           width: '100%',
           padding: '12px',
           backgroundColor: 'transparent',
-          color: '#667eea',
-          border: '1px solid #667eea',
+          color: '#3b82f6',
+          border: '1px solid #3b82f6',
           borderRadius: '8px',
           fontSize: '14px',
           cursor: 'pointer',
           transition: 'all 0.2s ease'
         }}
         onMouseEnter={(e) => {
-          e.target.style.backgroundColor = '#f8fafc';
+          e.target.style.backgroundColor = '#f0f4ff';
         }}
         onMouseLeave={(e) => {
           e.target.style.backgroundColor = 'transparent';
@@ -433,11 +515,13 @@ const CartPage = () => {
               color: '#6b7280',
               margin: 0
             }}>
-              {loading ? 'Chargement...' : `${cartSummary.nombre_articles} article${cartSummary.nombre_articles > 1 ? 's' : ''} dans votre panier`}
+              {loading ? 'Chargement...' : 
+               error ? 'Erreur de chargement' :
+               `${cartSummary.nombre_articles} article${cartSummary.nombre_articles > 1 ? 's' : ''} dans votre panier`}
             </p>
           </div>
 
-          {cartItems.length > 0 && (
+          {cartItems.length > 0 && !loading && (
             <button
               onClick={clearCart}
               style={{
@@ -462,6 +546,40 @@ const CartPage = () => {
           )}
         </div>
 
+        {/* Affichage d'erreur */}
+        {error && (
+          <div style={{
+            padding: '16px',
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            marginBottom: '24px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '20px' }}>⚠️</span>
+              <span style={{ color: '#dc2626', fontWeight: '500' }}>{error}</span>
+            </div>
+            <button
+              onClick={() => {
+                setError(null);
+                loadCartData();
+              }}
+              style={{
+                marginTop: '8px',
+                padding: '6px 12px',
+                backgroundColor: '#dc2626',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+
         {loading ? (
           // État de chargement
           <div style={{
@@ -475,7 +593,9 @@ const CartPage = () => {
                   height: '168px',
                   backgroundColor: '#f3f4f6',
                   borderRadius: '12px',
-                  animation: 'pulse 2s infinite'
+                  backgroundImage: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'loading 1.5s infinite'
                 }} />
               ))}
             </div>
@@ -483,10 +603,12 @@ const CartPage = () => {
               height: '300px',
               backgroundColor: '#f3f4f6',
               borderRadius: '12px',
-              animation: 'pulse 2s infinite'
+              backgroundImage: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+              backgroundSize: '200% 100%',
+              animation: 'loading 1.5s infinite'
             }} />
           </div>
-        ) : cartItems.length === 0 ? (
+        ) : cartItems.length === 0 && !error ? (
           // Panier vide
           <div style={{
             textAlign: 'center',
@@ -517,7 +639,7 @@ const CartPage = () => {
               onClick={() => navigate('/produits')}
               style={{
                 padding: '16px 32px',
-                backgroundColor: '#667eea',
+                backgroundColor: '#3b82f6',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
@@ -527,10 +649,10 @@ const CartPage = () => {
                 transition: 'all 0.2s ease'
               }}
               onMouseEnter={(e) => {
-                e.target.style.backgroundColor = '#5b6ee8';
+                e.target.style.backgroundColor = '#2563eb';
               }}
               onMouseLeave={(e) => {
-                e.target.style.backgroundColor = '#667eea';
+                e.target.style.backgroundColor = '#3b82f6';
               }}
             >
               🛍️ Parcourir le catalogue
@@ -560,6 +682,14 @@ const CartPage = () => {
           </div>
         )}
       </div>
+
+      {/* Styles CSS pour l'animation de chargement */}
+      <style jsx>{`
+        @keyframes loading {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </ClientLayout>
   );
 };
