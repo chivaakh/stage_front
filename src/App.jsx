@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+import AdminUsersSimple from "./pages/admin/admin_dashboard";
+
 import VendeurDashboard from './pages/VendeurDashboard';
 import DashboardStock from './pages/stock/DashboardStock';
 import HistoriqueMouvements from './pages/stock/HistoriqueMouvements';
@@ -40,6 +42,9 @@ function App() {
       <Routes>
         {/* Default Redirect */}
         {/* <Route path="/" element={<Navigate to="/dashboard" replace />} /> */}
+
+        {/* Admin Page */}
+        <Route path="/admin" element={<AdminUsersSimple />} />
 
         {/* Dashboard Main */}
         <Route path="/dashboard" element={<VendeurDashboard />} />
@@ -131,6 +136,7 @@ function App() {
         <Route path="/categories/:id" element={<CategoryDetailPage />} />        
         {/* Routes filtres */}
         <Route path="/recherche" element={<ProductsClientPage />} />
+        
 
 {/* // Dans les routes : */}
         <Route path="/panier" element={<CartPage />} />
