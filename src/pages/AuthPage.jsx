@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { User, Mail, Lock, Eye, EyeOff, Phone } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Phone, ClipboardCopy, Key } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebookSquare } from "react-icons/fa";
 import { GoogleLogin } from "@react-oauth/google";
@@ -8,6 +8,7 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);  // <-- pour afficher le formulaire reset
+  const [resetStep, setResetStep] = useState(1); // AJOUT : 1 = email, 2 = token + nouveau mot de passe
   const [signupMode, setSignupMode] = useState("telephone"); // ou "email"
   const [loginMode, setLoginMode] = useState("telephone"); // "telephone" ou "email"
   const [formData, setFormData] = useState({
@@ -17,6 +18,8 @@ const AuthPage = () => {
     telephone: "",
     password: "",
     resetEmail: "", // email pour réinitialisation
+    resetToken: "", //  AJOUT : pour le token de reset
+    newPassword: "", //  AJOUT : pour le nouveau mot de passe
   });
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -95,8 +98,8 @@ const AuthPage = () => {
 
 
 
-  // Soumission reset mot de passe
-  const handleResetSubmit = async (e) => {
+  //  MODIFIÉ : Soumission reset mot de passe - étape 1 (demande email)
+  const handleResetEmailSubmit = async (e) => {
     e.preventDefault();
     resetMessages();
 
@@ -117,10 +120,70 @@ const AuthPage = () => {
         throw new Error(data?.error || data?.message || "Erreur serveur");
       }
 
-      setSuccessMsg("Email de réinitialisation envoyé si ce compte existe.");
-      setFormData((f) => ({ ...f, resetEmail: "" }));
+      setSuccessMsg("Code de réinitialisation envoyé par email ! Vérifiez votre boîte mail.");
+      setResetStep(2); //  Passer à l'étape 2
     } catch (err) {
       setErrorMsg(err.message);
+    }
+  };
+
+  //  NOUVEAU : Soumission reset mot de passe - étape 2 (token + nouveau mot de passe)
+  const handleResetPasswordSubmit = async (e) => {
+    e.preventDefault();
+    resetMessages();
+
+    if (!formData.resetToken) {
+      setErrorMsg("Le code de réinitialisation est requis");
+      return;
+    }
+
+    if (!formData.newPassword || formData.newPassword.length < 6) {
+      setErrorMsg("Le nouveau mot de passe doit contenir au moins 6 caractères");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/reset-password/${formData.resetToken}/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mot_de_passe: formData.newPassword }),
+      });
+
+      const contentType = res.headers.get("content-type");
+      let data = null;
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || data?.message || "Erreur serveur");
+      }
+
+      setSuccessMsg("Mot de passe modifié avec succès ! Vous pouvez maintenant vous connecter.");
+      
+      // Réinitialiser le formulaire et revenir au login
+      setTimeout(() => {
+        setFormData(f => ({ ...f, resetEmail: "", resetToken: "", newPassword: "" }));
+        setShowResetPassword(false);
+        setResetStep(1);
+        resetMessages();
+      }, 2000);
+
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
+  };
+
+  //  NOUVEAU : Fonction pour coller depuis le presse-papiers
+  const handlePasteToken = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setFormData(f => ({ ...f, resetToken: text }));
+      setSuccessMsg("Code collé !");
+      setTimeout(() => setSuccessMsg(null), 2000);
+    } catch (err) {
+      setErrorMsg("Impossible d'accéder au presse-papiers");
+      setTimeout(() => setErrorMsg(null), 2000);
     }
   };
 
@@ -272,6 +335,7 @@ const AuthPage = () => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setShowResetPassword(false); // cacher reset si on change de formulaire
+    setResetStep(1); //  AJOUT : Réinitialiser l'étape
     setLoginMode("telephone"); // Ajoutez cette ligne
     setFormData({ nom: "", prenom: "", email: "", telephone: "", password: "" });
     resetMessages();
@@ -280,6 +344,7 @@ const AuthPage = () => {
 
   const toggleResetPassword = () => {
     setShowResetPassword(!showResetPassword);
+    setResetStep(1); //  AJOUT : Réinitialiser l'étape
     resetMessages();
   };
 
@@ -298,47 +363,130 @@ const AuthPage = () => {
         className="relative z-10 w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden bg-white/20 backdrop-blur-lg border border-white/30 flex"
         style={{ height: 480 }}
       >
-{/* Login form ou Reset form (exclusif) */}
-        <div
-  className={`absolute top-0 left-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
-    isLogin ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none"
-  } flex`}
->
+      {/* Login form ou Reset form (exclusif) */}
+      <div
+        className={`absolute top-0 left-0 w-1/2 h-full p-8 flex-col justify-center transition-all duration-700 ease-in-out z-10 ${
+          isLogin ? "translate-x-0 opacity-100 pointer-events-auto" : "-translate-x-full opacity-0 pointer-events-none"
+        } flex`}
+      >
           {showResetPassword ? (
             <>
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Réinitialiser le mot de passe</h2>
-              <form onSubmit={handleResetSubmit} className="space-y-6">
-                <div className="relative">
-                  <input
-                    type="email"
-                    name="resetEmail"
-                    placeholder="Votre email"
-                    value={formData.resetEmail || ""}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
-                  />
-                  <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                </div>
+              {resetStep === 1 ? (
+                //  ÉTAPE 1 : Demande d'email
+                <>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Mot de passe oublié</h2>
+                  <form onSubmit={handleResetEmailSubmit} className="space-y-6">
+                    <div className="relative">
+                      <input
+                        type="email"
+                        name="resetEmail"
+                        placeholder="Votre email"
+                        value={formData.resetEmail || ""}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                      />
+                      <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    </div>
 
-                {errorMsg && <p className="text-red-600 text-center">{errorMsg}</p>}
-                {successMsg && <p className="text-green-600 text-center">{successMsg}</p>}
+                    {errorMsg && <p className="text-red-600 text-center">{errorMsg}</p>}
+                    {successMsg && <p className="text-green-600 text-center">{successMsg}</p>}
 
-                <button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold py-3 rounded-xl transition-transform duration-300 transform hover:scale-105 shadow-lg"
-                >
-                  Envoyer l'email de réinitialisation
-                </button>
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold py-3 rounded-xl transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                      Envoyer le code par email
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={toggleResetPassword}
-                  className="mt-4 text-center text-blue-700 underline hover:text-blue-900 bg-transparent border-0 cursor-pointer"
-                >
-                  Annuler
-                </button>
-              </form>
+                    <button
+                      type="button"
+                      onClick={toggleResetPassword}
+                      className="mt-4 text-center text-blue-700 underline hover:text-blue-900 bg-transparent border-0 cursor-pointer w-full"
+                    >
+                      Annuler
+                    </button>
+                  </form>
+                </>
+              ) : (
+                //  ÉTAPE 2 : Saisie du token + nouveau mot de passe
+                <>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Nouveau mot de passe</h2>
+                  <p className="text-sm text-gray-600 mb-6 text-center">
+                    Vérifiez votre email et copiez le code de réinitialisation
+                  </p>
+
+                  <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                    {/* Champ Token */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        name="resetToken"
+                        placeholder="Collez votre code de réinitialisation ici"
+                        value={formData.resetToken || ""}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                      />
+                      <Key className="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <ClipboardCopy
+                        onClick={handlePasteToken}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 cursor-pointer w-5 h-5"
+                        title="Coller le code"
+                      />
+                    </div>
+
+                    {/* Champ nouveau mot de passe */}
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="newPassword"
+                        placeholder="Nouveau mot de passe"
+                        value={formData.newPassword || ""}
+                        onChange={handleInputChange}
+                        required
+                        minLength={6}
+                        className="w-full bg-white/50 backdrop-blur-sm border border-white/30 rounded-xl px-4 py-3 pr-12 text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+
+                    {errorMsg && <p className="text-red-600 text-center">{errorMsg}</p>}
+                    {successMsg && <p className="text-blue-600 text-center">{successMsg}</p>}
+
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-transform duration-300 transform hover:scale-105 shadow-lg"
+                    >
+                      Modifier le mot de passe
+                    </button>
+
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setResetStep(1)}
+                        className="flex-1 text-center text-blue-700 underline hover:text-blue-900"
+                      >
+                        ← Renvoyer le code
+                      </button>
+                      <button
+                        type="button"
+                        onClick={toggleResetPassword}
+                        className="flex-1 text-center text-gray-600 underline hover:text-gray-800"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </form>
+
+                </>
+              )}
             </>
           ) : (
             <>
