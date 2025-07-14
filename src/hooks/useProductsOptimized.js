@@ -1,4 +1,4 @@
-// src/hooks/useProductsOptimized.js - VERSION FINALE CORRIGÉE
+// src/hooks/useProductsOptimized.js - VERSION CORRIGÉE AVEC PROXY
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -13,7 +13,6 @@ export const useProductsOptimized = () => {
     itemsPerPage: 12
   });
 
-  // ✅ États pour filtrage et tri
   const [filters, setFilters] = useState({
     search: '',
     category: '',
@@ -31,37 +30,31 @@ export const useProductsOptimized = () => {
         page_size: pagination.itemsPerPage.toString()
       });
 
-      // ✅ Ajouter les filtres seulement s'ils sont définis
       if (filters.search?.trim()) {
         params.append('search', filters.search.trim());
       }
-      
-      if (filters.category && filters.category !== '') {
+      if (filters.category) {
         params.append('categorie', filters.category);
       }
-      
-      if (filters.sortBy && filters.sortBy !== '') {
+      if (filters.sortBy) {
         params.append('ordering', filters.sortBy);
       }
-      
-      if (filters.stockFilter && filters.stockFilter !== '') {
+      if (filters.stockFilter) {
         params.append('stock_filter', filters.stockFilter);
       }
 
-      console.log('🔍 Chargement des produits avec URL:', `http://localhost:8000/api/produits/?${params}`);
+      console.log('🔍 URL chargée:', `/api/produits/?${params}`);
 
-      const response = await fetch(`http://localhost:8000/api/produits/?${params}`);
+      const response = await fetch(`/api/produits/?${params}`, {
+        credentials: 'include' // essentiel pour les sessions
+      });
       
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
 
       const data = await response.json();
       console.log('📦 Données reçues:', data);
-      
-      // ✅ Gestion flexible de la réponse (avec ou sans pagination)
+
       if (data.results && Array.isArray(data.results)) {
-        // Format paginé de Django REST Framework
         setProducts(data.results);
         setPagination(prev => ({
           ...prev,
@@ -70,7 +63,6 @@ export const useProductsOptimized = () => {
           totalItems: data.count || data.results.length
         }));
       } else if (Array.isArray(data)) {
-        // Format direct (tableau)
         setProducts(data);
         setPagination(prev => ({
           ...prev,
@@ -83,7 +75,7 @@ export const useProductsOptimized = () => {
       }
 
     } catch (err) {
-      console.error('❌ Erreur lors du chargement des produits:', err);
+      console.error('❌ Erreur chargement produits:', err);
       setError(err.message);
       setProducts([]);
     } finally {
@@ -91,102 +83,88 @@ export const useProductsOptimized = () => {
     }
   }, [filters, pagination.itemsPerPage]);
 
-  // ✅ Recharger quand les filtres changent
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      loadProducts(1);
-    }, 300); // Debounce de 300ms pour éviter trop de requêtes
-
+    const timeoutId = setTimeout(() => loadProducts(1), 300);
     return () => clearTimeout(timeoutId);
   }, [filters]);
 
-  // ✅ Chargement initial
   useEffect(() => {
     loadProducts(1);
-  }, []); // Seulement au mount
+  }, []);
 
-  // ✅ Fonction pour mettre à jour les filtres
   const updateFilters = (newFilters) => {
-    console.log('🔧 Mise à jour des filtres:', newFilters);
-    setFilters(prev => ({
-      ...prev,
-      ...newFilters
-    }));
+    console.log('🔧 Filtres mis à jour:', newFilters);
+    setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
-  // ✅ Fonction pour changer de page
   const changePage = (page) => {
     if (page >= 1 && page <= pagination.totalPages && !loading) {
-      console.log('📄 Changement de page vers:', page);
+      console.log('📄 Page changée vers:', page);
       loadProducts(page);
     }
   };
 
-  // ✅ Fonction pour créer un produit
   const createProduct = async (productData) => {
     setLoading(true);
     setError(null);
 
     try {
-      console.log('🆕 Création produit avec données:', productData);
-      
-      const response = await fetch('http://localhost:8000/api/produits/', {
+      console.log('🆕 Création produit:', productData);
+
+      const response = await fetch('/api/produits/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(productData)
+        body: JSON.stringify(productData),
+        credentials: 'include'
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Erreur API:', errorData);
-        throw new Error(errorData.detail || errorData.error || 'Erreur lors de la création du produit');
+        throw new Error(errorData.detail || errorData.error || 'Erreur création produit');
       }
 
       const newProduct = await response.json();
       console.log('✅ Produit créé:', newProduct);
-
-      // Recharger la liste actuelle
-      await loadProducts(pagination.currentPage);
+      await loadProducts(1);
       return newProduct;
 
     } catch (err) {
-      console.error('❌ Erreur lors de la création:', err);
+      console.error('❌ Erreur création:', err);
       setError(err.message);
-      throw err; // Relancer l'erreur pour que le composant puisse la gérer
+      throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Fonction pour modifier un produit
   const updateProduct = async (productId, updatedData) => {
     setLoading(true);
     setError(null);
 
     try {
-      console.log('🔄 Modification produit ID:', productId, 'avec données:', updatedData);
-      
-      const response = await fetch(`http://localhost:8000/api/produits/${productId}/`, {
+      console.log('🔄 Mise à jour produit:', productId, updatedData);
+
+      const response = await fetch(`/api/produits/${productId}/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updatedData),
+        credentials: 'include'
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('❌ Erreur API:', errorData);
-        throw new Error(errorData.detail || errorData.error || 'Erreur lors de la modification du produit');
+        throw new Error(errorData.detail || errorData.error || 'Erreur mise à jour produit');
       }
 
       const updatedProduct = await response.json();
-      console.log('✅ Produit modifié:', updatedProduct);
-
+      console.log('✅ Produit mis à jour:', updatedProduct);
       await loadProducts(pagination.currentPage);
       return updatedProduct;
+
     } catch (err) {
       console.error('❌ Erreur updateProduct:', err);
       setError(err.message);
@@ -196,24 +174,23 @@ export const useProductsOptimized = () => {
     }
   };
 
-  // ✅ Fonction pour supprimer un produit
   const deleteProduct = async (productId) => {
     setLoading(true);
     setError(null);
 
     try {
-      console.log('🗑️ Suppression produit ID:', productId);
-      
-      const response = await fetch(`http://localhost:8000/api/produits/${productId}/`, {
-        method: 'DELETE'
+      console.log('🗑️ Suppression produit:', productId);
+
+      const response = await fetch(`/api/produits/${productId}/`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la suppression du produit');
-      }
+      if (!response.ok) throw new Error('Erreur suppression produit');
 
       console.log('✅ Produit supprimé');
       await loadProducts(pagination.currentPage);
+
     } catch (err) {
       console.error('❌ Erreur deleteProduct:', err);
       setError(err.message);
@@ -223,26 +200,13 @@ export const useProductsOptimized = () => {
     }
   };
 
-  // ✅ Fonction pour effacer les erreurs
-  const clearError = () => {
-    setError(null);
-  };
+  const clearError = () => setError(null);
 
-  // ✅ Calcul des statistiques basé sur les produits actuels
   const stats = {
     total: pagination.totalItems,
-    inStock: products.filter(p => {
-      const stockTotal = p.stock_total || 0;
-      return stockTotal > 5;
-    }).length,
-    lowStock: products.filter(p => {
-      const stockTotal = p.stock_total || 0;
-      return stockTotal > 0 && stockTotal <= 5;
-    }).length,
-    outOfStock: products.filter(p => {
-      const stockTotal = p.stock_total || 0;
-      return stockTotal === 0;
-    }).length,
+    inStock: products.filter(p => (p.stock_total || 0) > 5).length,
+    lowStock: products.filter(p => (p.stock_total || 0) > 0 && (p.stock_total || 0) <= 5).length,
+    outOfStock: products.filter(p => (p.stock_total || 0) === 0).length,
     withImages: products.filter(p => p.images?.length > 0).length
   };
 

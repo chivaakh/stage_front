@@ -117,6 +117,27 @@ const SettingsPage = () => {
     });
   };
 
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/logout/', {
+        method: 'POST',
+        credentials: 'include', // Très important pour gérer la session Django
+      });
+
+      if (response.ok) {
+        // Redirige vers la page de login ou d'accueil
+        window.location.href = '/login';
+      } else {
+        console.error('Erreur lors de la déconnexion');
+        alert('Erreur lors de la déconnexion');
+      }
+    } catch (error) {
+      console.error('Erreur réseau :', error);
+      alert('Erreur réseau');
+    }
+  };
+
   const renderAccountSettings = () => (
     <div className="space-y-8">
       {/* Section Profil Vendeur avec nouveau design */}
@@ -356,16 +377,21 @@ const SettingsPage = () => {
         </button>
 
         <button
-          onClick={() => {
-            if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-              console.log('Déconnexion...');
-            }
+          onClick={handleLogout}
+          style={{
+            backgroundColor: '#ef4444',
+            color: 'white',
+            padding: '12px 24px',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            marginTop: '24px',
           }}
-          className="group flex items-center justify-center px-8 py-4 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-2xl hover:from-red-600 hover:to-pink-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl font-semibold"
         >
-          <LogOut className="w-6 h-6 mr-3 group-hover:translate-x-1 transition-transform" />
           Se déconnecter
         </button>
+
       </div>
     </div>
   );
@@ -823,7 +849,7 @@ const SettingsPage = () => {
                           onClick={() => setActiveSection(section.id)}
                           className={`group w-full flex items-center px-6 py-4 rounded-2xl transition-all duration-300 transform ${
                             isActive
-                              ? `bg-gradient-to-r ${section.color} text-white shadow-xl scale-105 shadow-lg`
+                              ? `bg-gradient-to-r ${section.color} text-white shadow-xl scale-105`
                               : 'text-gray-600 hover:bg-white/40 hover:text-gray-800 hover:scale-102'
                           }`}
                           style={{ animationDelay: `${index * 100}ms` }}

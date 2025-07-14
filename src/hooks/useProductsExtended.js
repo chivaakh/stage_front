@@ -32,11 +32,14 @@ export const useProductsExtended = () => {
         nom: productData.nom,
         description: productData.description,
         reference: productData.reference,
+        categorie_id: productData.categorie,
         images: validImages,
         specifications: validSpecs
       };
       
       console.log('📤 Données complètes envoyées au backend:', completeData);
+      console.log('👉 ID catégorie envoyé :', productData.categorie);
+
       
       const response = await axios.post(API_URL, completeData, {
         headers: {
