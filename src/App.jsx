@@ -11,6 +11,7 @@ import { FavoritesProvider } from './contexts/FavoritesContext';
 // ===========================
 // PAGES VENDEUR/ADMIN EXISTANTES
 // ===========================
+import AdminUsersSimple from "./pages/admin/admin_dashboard";
 import VendeurDashboard from './pages/VendeurDashboard';
 import DashboardStock from './pages/stock/DashboardStock';
 import HistoriqueMouvements from './pages/stock/HistoriqueMouvements';
@@ -159,6 +160,9 @@ function App() {
             {/* ===========================
                 ROUTES VENDEUR/ADMIN
                 =========================== */}
+            
+            {/* Admin Dashboard */}
+            <Route path="/admin" element={<AdminUsersSimple />} />
             
             {/* Dashboard Principal */}
             <Route path="/dashboard" element={<VendeurDashboard />} />
