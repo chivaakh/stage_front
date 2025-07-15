@@ -1,4 +1,4 @@
-// src/pages/VendeurDashboard.jsx - VERSION CORRIGÉE
+// src/pages/VendeurDashboard.jsx - VERSION AVEC ICÔNES SVG
 import { useState } from 'react';
 import { Button, Alert } from '../components/ui';
 import { PlusIcon, ChevronLeftIcon, ChevronRightIcon } from '../components/icons';
@@ -9,8 +9,60 @@ import ProductSearch from '../components/products/ProductSearch';
 import ModernSidebar from '../components/layout/ModernSidebar';
 import { useProductsOptimized } from '../hooks/useProductsOptimized';
 import { useCategories } from '../hooks/useCategories';
-import { useModal } from '../hooks/useModal'; // ✅ AJOUT DE L'IMPORT MANQUANT
+import { useModal } from '../hooks/useModal';
 import { theme } from '../styles/theme';
+
+// Icônes SVG personnalisées
+const Icons = {
+  // Icône pour stock disponible (vert)
+  InStock: () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" fill="#16a34a"/>
+      <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  
+  // Icône pour stock faible (jaune)
+  LowStock: () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L2 7v10c0 5.55 3.84 9.74 9 11 5.16-1.26 9-5.45 9-11V7l-10-5z" fill="#d97706"/>
+      <path d="M12 8v4M12 16h.01" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  
+  // Icône pour rupture de stock (rouge)
+  OutOfStock: () => (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" fill="#dc2626"/>
+      <path d="M15 9l-6 6M9 9l6 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  
+  // Icône pour boîte/package
+  Package: () => (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+      <polyline points="3.27,6.96 12,12.01 20.73,6.96"/>
+      <line x1="12" y1="22.08" x2="12" y2="12"/>
+    </svg>
+  ),
+  
+  // Icône pour chargement
+  Loading: () => (
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M21 12a9 9 0 11-6.219-8.56"/>
+      <animateTransform
+        attributeName="transform"
+        attributeType="XML"
+        type="rotate"
+        dur="1s"
+        from="0 12 12"
+        to="360 12 12"
+        repeatCount="indefinite"
+      />
+    </svg>
+  )
+};
 
 function VendeurDashboard() {
   const {
@@ -94,7 +146,7 @@ function VendeurDashboard() {
     }
   };
 
-  // ✅ Gestion des filtres
+  // Gestion des filtres
   const handleSearchChange = (value) => {
     updateFilters({ search: value });
   };
@@ -111,7 +163,7 @@ function VendeurDashboard() {
     updateFilters({ stockFilter });
   };
 
-  // ✅ Options de tri
+  // Options de tri
   const sortOptions = [
     { value: '', label: 'Trier par...' },
     { value: 'nom', label: 'Nom (A-Z)' },
@@ -122,7 +174,7 @@ function VendeurDashboard() {
     { value: '-prix_min', label: 'Prix décroissant' }
   ];
 
-  // ✅ Options de filtrage par stock
+  // Options de filtrage par stock
   const stockOptions = [
     { value: '', label: 'Tous les produits' },
     { value: 'in_stock', label: 'En stock' },
@@ -133,455 +185,492 @@ function VendeurDashboard() {
   return (
     <div style={{ 
       display: 'flex', 
-      minHeight: '100vh', 
+      height: '100vh', // Hauteur fixe 100vh
       backgroundColor: '#f8fafc',
-      fontFamily: theme.fonts?.base || 'system-ui'
+      fontFamily: theme.fonts?.base || 'system-ui',
+      overflow: 'hidden' // Empêche le scroll global
     }}>
       <ModernSidebar 
         onAddProductClick={handleAddProduct} 
         currentPage="products"
       />
 
+      {/* Contenu principal avec scroll interne */}
       <div style={{ 
-        flex: 1, 
-        padding: theme.spacing?.xl || '24px',
-        backgroundColor: '#ffffff',
-        margin: theme.spacing?.lg || '16px',
-        borderRadius: theme.borderRadius?.lg || '8px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        marginLeft: '25px', // Même largeur que la sidebar
+        overflow: 'hidden', // Empêche le débordement
+        backgroundColor: '#f8fafc' // Background pour tout l'espace
       }}>
-        {/* En-tête */}
+        
+        {/* Container principal avec scroll */}
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: theme.spacing?.xl || '24px',
-          paddingBottom: theme.spacing?.lg || '16px',
-          borderBottom: `1px solid ${theme.colors?.gray?.[200] || '#e5e7eb'}`
+          flex: 1,
+          overflowY: 'auto', // Scroll vertical uniquement
+          overflowX: 'hidden', // Pas de scroll horizontal
+          padding: '24px',
+          backgroundColor: '#ffffff',
+          // Supprimer margin et borderRadius pour occuper tout l'espace
         }}>
-          <div>
-            <h1 style={{ 
-              fontSize: '32px', 
-              fontWeight: '700', 
-              color: theme.colors?.gray?.[800] || '#1f2937',
-              margin: 0,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent'
+
+          {/* En-tête fixe */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '24px',
+            paddingBottom: '16px',
+            borderBottom: '1px solid #e5e7eb',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
+            <div style={{ minWidth: '200px' }}>
+              <h1 style={{ 
+                fontSize: '28px', 
+                fontWeight: '700', 
+                color: '#1f2937',
+                margin: 0,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
+              }}>
+                Tous les Produits
+              </h1>
+              <div style={{ 
+                fontSize: '14px', 
+                color: '#6b7280',
+                marginTop: '4px'
+              }}>
+                <span style={{ color: '#4f46e5', fontWeight: '500' }}>
+                  Tableau de bord
+                </span>
+                <span> → Tous les produits</span>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap'
             }}>
-              Tous les Produits
-            </h1>
-            <div style={{ 
-              fontSize: '14px', 
-              color: theme.colors?.gray?.[500] || '#6b7280',
-              marginTop: '8px',
+              <div style={{ minWidth: '250px' }}>
+                <ProductSearch
+                  value={filters.search}
+                  onChange={handleSearchChange}
+                  placeholder="Rechercher des produits..."
+                />
+              </div>
               
-            }}>
-              <span style={{ color: '#4f46e5', fontWeight: '500' }}>
-                Tableau de bord
-              </span>
-              <span> → Tous les produits</span>
+              <Button 
+                onClick={handleAddProduct} 
+                disabled={loading}
+                style={{
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                  padding: '10px 20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  borderRadius: '8px',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                <PlusIcon size={16} />
+                Ajouter un Produit
+              </Button>
             </div>
           </div>
 
+          {/* Alertes d'erreur */}
+          {error && (
+            <Alert type="error" onClose={clearError}>
+              {error}
+            </Alert>
+          )}
+
+          {loading && (
+            <Alert type="warning">
+              {editingProduct ? 
+                '🔄 Modification du produit en cours...' : 
+                '⏳ Chargement des produits...'
+              }
+            </Alert>
+          )}
+
+          {/* Barre de filtres compacte */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '16px'
-          }}>
-            <ProductSearch
-              value={filters.search}
-              onChange={handleSearchChange}
-              placeholder="Rechercher des produits..."
-            />
-            
-            <Button 
-              onClick={handleAddProduct} 
-              disabled={loading}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none',
-                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
-                padding: '12px 24px',
-                fontSize: '15px',
-                fontWeight: '600',
-                borderRadius: '8px',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-            >
-              <PlusIcon size={18} />
-              Ajouter un Produit
-            </Button>
-          </div>
-        </div>
-
-        {/* Alertes d'erreur */}
-        {error && (
-          <Alert type="error" onClose={clearError}>
-            {error}
-          </Alert>
-        )}
-
-        {loading && (
-          <Alert type="warning">
-            {editingProduct ? 
-              '🔄 Modification du produit en cours...' : 
-              '⏳ Chargement des produits...'
-            }
-          </Alert>
-        )}
-
-        {/* ✅ BARRE DE FILTRES */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '24px',
-          padding: '24px',
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <select 
-              value={filters.sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                color: '#374151',
-                outline: 'none',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                minWidth: '140px'
-              }}
-            >
-              {sortOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select 
-              value={filters.category}
-              onChange={(e) => handleCategoryFilter(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                color: '#374151',
-                outline: 'none',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                minWidth: '160px'
-              }}
-            >
-              <option value="">Toutes les catégories</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.nom}
-                </option>
-              ))}
-            </select>
-
-            <select 
-              value={filters.stockFilter}
-              onChange={(e) => handleStockFilter(e.target.value)}
-              style={{
-                padding: '12px 16px',
-                border: '1px solid #d1d5db',
-                borderRadius: '8px',
-                fontSize: '14px',
-                color: '#374151',
-                outline: 'none',
-                backgroundColor: 'white',
-                cursor: 'pointer',
-                minWidth: '140px'
-              }}
-            >
-              {stockOptions.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Statistiques */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '24px',
-            fontSize: '14px'
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+            padding: '16px',
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            borderRadius: '8px',
+            border: '1px solid #e5e7eb',
+            flexWrap: 'wrap',
+            gap: '12px'
           }}>
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '8px',
-              padding: '8px 12px',
-              backgroundColor: 'white',
-              borderRadius: '6px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+              gap: '12px',
+              flexWrap: 'wrap'
             }}>
-              <span style={{ fontWeight: '700', color: '#1f2937', fontSize: '16px' }}>
-                {pagination.totalItems}
-              </span>
-              <span style={{ color: '#6b7280' }}>Résultats</span>
+              <select 
+                value={filters.sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  color: '#374151',
+                  outline: 'none',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  minWidth: '120px'
+                }}
+              >
+                {sortOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <select 
+                value={filters.category}
+                onChange={(e) => handleCategoryFilter(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  color: '#374151',
+                  outline: 'none',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  minWidth: '140px'
+                }}
+              >
+                <option value="">Toutes les catégories</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.nom}
+                  </option>
+                ))}
+              </select>
+
+              <select 
+                value={filters.stockFilter}
+                onChange={(e) => handleStockFilter(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  color: '#374151',
+                  outline: 'none',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  minWidth: '120px'
+                }}
+              >
+                {stockOptions.map(option => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
-            
+
+            {/* Statistiques compactes avec icônes SVG */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
               gap: '16px',
-              fontSize: '13px' 
+              fontSize: '13px',
+              flexWrap: 'wrap'
             }}>
               <div style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
-                gap: '4px',
-                padding: '4px 8px',
-                backgroundColor: '#dcfce7',
-                borderRadius: '4px',
-                color: '#16a34a',
-                fontWeight: '500'
+                gap: '6px',
+                padding: '6px 10px',
+                backgroundColor: 'white',
+                borderRadius: '6px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
               }}>
-                <span>🟢</span>
-                <span>{stats.inStock} En stock</span>
+                <span style={{ fontWeight: '700', color: '#1f2937', fontSize: '15px' }}>
+                  {pagination.totalItems}
+                </span>
+                <span style={{ color: '#6b7280' }}>Résultats</span>
               </div>
               
-              {stats.lowStock > 0 && (
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                fontSize: '12px' 
+              }}>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '4px',
-                  padding: '4px 8px',
-                  backgroundColor: '#fef3c7',
-                  borderRadius: '4px',
-                  color: '#d97706',
-                  fontWeight: '500'
+                  gap: '6px',
+                  padding: '6px 8px',
+                  backgroundColor: '#dcfce7',
+                  borderRadius: '6px',
+                  color: '#16a34a',
+                  fontWeight: '600'
                 }}>
-                  <span>🟡</span>
-                  <span>{stats.lowStock} Stock faible</span>
+                  <Icons.InStock />
+                  <span>{stats.inStock}</span>
                 </div>
-              )}
-              
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '4px',
-                padding: '4px 8px',
-                backgroundColor: '#fecaca',
-                borderRadius: '4px',
-                color: '#dc2626',
-                fontWeight: '500'
-              }}>
-                <span>🔴</span>
-                <span>{stats.outOfStock} Rupture</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Grille de produits */}
-        {loading ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '80px 20px',
-            color: '#6b7280'
-          }}>
-            <div style={{ 
-              fontSize: '48px', 
-              marginBottom: '16px',
-              opacity: 0.5 
-            }}>
-              ⏳
-            </div>
-            <div style={{ fontSize: '18px', fontWeight: '500' }}>
-              Chargement des produits...
-            </div>
-          </div>
-        ) : (
-          <>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '24px'
-            }}>
-              {products.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onEdit={handleEditProduct}
-                  onDelete={deleteProduct}
-                  onViewDetails={handleViewDetails}
-                />
-              ))}
-
-              {products.length === 0 && !loading && (
-                <div style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  padding: '80px 20px',
-                  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                  borderRadius: '8px',
-                  border: '2px dashed #d1d5db'
-                }}>
-                  <div style={{ fontSize: '64px', marginBottom: '16px', opacity: 0.5 }}>
-                    📦
-                  </div>
-                  <h3 style={{ 
-                    fontSize: '20px', 
-                    color: '#1f2937', 
-                    marginBottom: '8px',
+                
+                {stats.lowStock > 0 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    padding: '6px 8px',
+                    backgroundColor: '#fef3c7',
+                    borderRadius: '6px',
+                    color: '#d97706',
                     fontWeight: '600'
                   }}>
-                    {filters.search || filters.category || filters.stockFilter ? 'Aucun produit trouvé' : 'Aucun produit'}
-                  </h3>
-                  <p style={{ 
-                    color: '#6b7280', 
-                    marginBottom: '24px',
-                    fontSize: '16px',
-                    maxWidth: '400px',
-                    margin: '0 auto 24px auto'
-                  }}>
-                    {filters.search || filters.category || filters.stockFilter
-                      ? 'Essayez d\'ajuster vos termes de recherche ou filtres' 
-                      : 'Commencez par créer votre premier produit avec images et spécifications'
-                    }
-                  </p>
-                  {!filters.search && !filters.category && !filters.stockFilter && (
-                    <Button 
-                      onClick={handleAddProduct}
-                      style={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        border: 'none',
-                        boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
-                        padding: '12px 24px',
-                        fontSize: '16px',
-                        fontWeight: '600',
-                        color: 'white',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <PlusIcon />
-                      Créer votre Premier Produit
-                    </Button>
-                  )}
+                    <Icons.LowStock />
+                    <span>{stats.lowStock}</span>
+                  </div>
+                )}
+                
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '6px',
+                  padding: '6px 8px',
+                  backgroundColor: '#fecaca',
+                  borderRadius: '6px',
+                  color: '#dc2626',
+                  fontWeight: '600'
+                }}>
+                  <Icons.OutOfStock />
+                  <span>{stats.outOfStock}</span>
                 </div>
-              )}
+              </div>
             </div>
+          </div>
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div style={{
+          {/* Grille de produits responsive */}
+          {loading ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 20px',
+              color: '#6b7280'
+            }}>
+              <div style={{ 
+                marginBottom: '16px',
+                opacity: 0.6,
                 display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '16px',
-                marginTop: '48px',
-                padding: '16px',
-                borderTop: '1px solid #e5e7eb'
+                justifyContent: 'center'
               }}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => changePage(pagination.currentPage - 1)}
-                  disabled={pagination.currentPage === 1 || loading}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <ChevronLeftIcon size={16} />
-                  Précédent
-                </Button>
+                <Icons.Loading />
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '500' }}>
+                Chargement des produits...
+              </div>
+            </div>
+          ) : (
+            <>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '20px',
+                padding: '0 4px' // Petit padding pour éviter le débordement
+              }}>
+                {products.map(product => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onEdit={handleEditProduct}
+                    onDelete={deleteProduct}
+                    onViewDetails={handleViewDetails}
+                  />
+                ))}
 
+                {products.length === 0 && !loading && (
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '60px 20px',
+                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                    borderRadius: '8px',
+                    border: '2px dashed #d1d5db'
+                  }}>
+                    <div style={{ 
+                      marginBottom: '16px', 
+                      opacity: 0.4,
+                      color: '#9ca3af',
+                      display: 'flex',
+                      justifyContent: 'center'
+                    }}>
+                      <Icons.Package />
+                    </div>
+                    <h3 style={{ 
+                      fontSize: '18px', 
+                      color: '#1f2937', 
+                      marginBottom: '8px',
+                      fontWeight: '600'
+                    }}>
+                      {filters.search || filters.category || filters.stockFilter ? 'Aucun produit trouvé' : 'Aucun produit'}
+                    </h3>
+                    <p style={{ 
+                      color: '#6b7280', 
+                      marginBottom: '20px',
+                      fontSize: '14px',
+                      maxWidth: '350px',
+                      margin: '0 auto 20px auto'
+                    }}>
+                      {filters.search || filters.category || filters.stockFilter
+                        ? 'Essayez d\'ajuster vos termes de recherche ou filtres' 
+                        : 'Commencez par créer votre premier produit avec images et spécifications'
+                      }
+                    </p>
+                    {!filters.search && !filters.category && !filters.stockFilter && (
+                      <Button 
+                        onClick={handleAddProduct}
+                        style={{
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          border: 'none',
+                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                          padding: '10px 20px',
+                          fontSize: '14px',
+                          fontWeight: '600',
+                          color: 'white',
+                          borderRadius: '8px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px'
+                        }}
+                      >
+                        <PlusIcon />
+                        Créer votre Premier Produit
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Pagination */}
+              {pagination.totalPages > 1 && (
                 <div style={{
                   display: 'flex',
+                  justifyContent: 'center',
                   alignItems: 'center',
-                  gap: '8px'
+                  gap: '12px',
+                  marginTop: '32px',
+                  padding: '16px',
+                  borderTop: '1px solid #e5e7eb'
                 }}>
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-                    .filter(page => 
-                      page === 1 || 
-                      page === pagination.totalPages ||
-                      (page >= pagination.currentPage - 2 && page <= pagination.currentPage + 2)
-                    )
-                    .map((page, index, array) => (
-                      <div key={page} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {index > 0 && array[index - 1] !== page - 1 && (
-                          <span style={{ color: '#9ca3af' }}>...</span>
-                        )}
-                        <button
-                          onClick={() => changePage(page)}
-                          disabled={loading}
-                          style={{
-                            padding: '8px 12px',
-                            border: `1px solid ${page === pagination.currentPage ? '#4f46e5' : '#d1d5db'}`,
-                            backgroundColor: page === pagination.currentPage ? '#4f46e5' : 'white',
-                            color: page === pagination.currentPage ? 'white' : '#374151',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontWeight: page === pagination.currentPage ? '600' : 'normal',
-                            minWidth: '40px'
-                          }}
-                        >
-                          {page}
-                        </button>
-                      </div>
-                    ))}
-                </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => changePage(pagination.currentPage - 1)}
+                    disabled={pagination.currentPage === 1 || loading}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    <ChevronLeftIcon size={14} />
+                    Précédent
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => changePage(pagination.currentPage + 1)}
-                  disabled={pagination.currentPage === pagination.totalPages || loading}
-                  style={{
+                  <div style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  Suivant
-                  <ChevronRightIcon size={16} />
-                </Button>
-              </div>
-            )}
-          </>
-        )}
+                    gap: '6px'
+                  }}>
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                      .filter(page => 
+                        page === 1 || 
+                        page === pagination.totalPages ||
+                        (page >= pagination.currentPage - 2 && page <= pagination.currentPage + 2)
+                      )
+                      .map((page, index, array) => (
+                        <div key={page} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          {index > 0 && array[index - 1] !== page - 1 && (
+                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>...</span>
+                          )}
+                          <button
+                            onClick={() => changePage(page)}
+                            disabled={loading}
+                            style={{
+                              padding: '6px 10px',
+                              border: `1px solid ${page === pagination.currentPage ? '#4f46e5' : '#d1d5db'}`,
+                              backgroundColor: page === pagination.currentPage ? '#4f46e5' : 'white',
+                              color: page === pagination.currentPage ? 'white' : '#374151',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontWeight: page === pagination.currentPage ? '600' : 'normal',
+                              minWidth: '32px',
+                              fontSize: '13px'
+                            }}
+                          >
+                            {page}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
 
-        {/* Formulaire amélioré */}
-        <ProductFormImproved
-          isOpen={isFormOpen}
-          onClose={handleCloseForm}
-          onSubmit={handleFormSubmit}
-          initialData={editingProduct}
-          isLoading={loading}
-        />
-
-        {/* Modal de détails */}
-        <ProductDetailsModal
-          product={selectedProduct}
-          isOpen={isDetailsOpen}
-          onClose={closeDetails}
-          onEdit={handleEditFromDetails}
-          onDelete={handleDeleteFromDetails}
-        />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => changePage(pagination.currentPage + 1)}
+                    disabled={pagination.currentPage === pagination.totalPages || loading}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Suivant
+                    <ChevronRightIcon size={14} />
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Formulaire et modales */}
+      <ProductFormImproved
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSubmit={handleFormSubmit}
+        initialData={editingProduct}
+        isLoading={loading}
+      />
+
+      <ProductDetailsModal
+        product={selectedProduct}
+        isOpen={isDetailsOpen}
+        onClose={closeDetails}
+        onEdit={handleEditFromDetails}
+        onDelete={handleDeleteFromDetails}
+      />
     </div>
   );
 }

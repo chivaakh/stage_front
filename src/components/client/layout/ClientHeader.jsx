@@ -1,5 +1,5 @@
 // src/components/client/layout/ClientHeader.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFavoritesContext } from '../../../contexts/FavoritesContext';
 import FavoritesCounter from '../common/FavoritesCounter';
@@ -11,8 +11,120 @@ const ClientHeader = ({ currentPage = 'home' }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFavoritesDropdownOpen, setIsFavoritesDropdownOpen] = useState(false);
   
+  // NOUVEAU : États pour les informations client
+  const [clientInfo, setClientInfo] = useState({
+    initiales: 'CL',
+    nom_complet: 'Client Ishrili',
+    email: '',
+    loading: true
+  });
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  
   const favoritesButtonRef = useRef(null);
+  const profileButtonRef = useRef(null);
   const { getFavoritesCount } = useFavoritesContext();
+
+  // NOUVEAU : Récupérer les informations du client au montage
+  useEffect(() => {
+    fetchClientInfo();
+  }, []);
+
+  const fetchClientInfo = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/client-info/', {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setClientInfo({
+          initiales: data.initiales || 'CL',
+          nom_complet: data.nom_complet || 'Client Ishrili',
+          email: data.email || '',
+          type_utilisateur: data.type_utilisateur || 'client',
+          est_verifie: data.est_verifie || false,
+          loading: false
+        });
+      } else {
+        // En cas d'erreur, utiliser les valeurs par défaut
+        setClientInfo({
+          initiales: 'CL',
+          nom_complet: 'Client Ishrili',
+          email: '',
+          loading: false
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des infos client:', error);
+      setClientInfo({
+        initiales: 'CL',
+        nom_complet: 'Client Ishrili',
+        email: '',
+        loading: false
+      });
+    }
+  };
+
+  // Fonction de déconnexion
+  const handleLogout = async () => {
+    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+      try {
+        await fetch('http://localhost:8000/api/logout/', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/login';
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        // Rediriger quand même en cas d'erreur réseau
+        window.location.href = '/login';
+      }
+    }
+  };
+
+  // NOUVEAU : Gestion du dropdown profil
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const closeProfileDropdown = () => {
+    setIsProfileDropdownOpen(false);
+  };
+
+  // Fermer le dropdown si on clique ailleurs
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileButtonRef.current && !profileButtonRef.current.contains(event.target)) {
+        closeProfileDropdown();
+      }
+    };
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileDropdownOpen]);
+
+  // Composant SVG Ishrili
+  const IshriliIcon = () => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="20" 
+      height="20" 
+      viewBox="0 0 200 200" 
+      fill="white"
+    >
+      <circle cx="100" cy="40" r="15" fill="white" />
+      <path d="M109.6,164.7c-5.9,6.3-15.9,7.7-22.8,2.8c-8.3-5.9-10.7-18.6-4.4-35.3c4.7-12.6,11.6-24.9,13.5-31.8 
+               c2.2-7.9,0.7-13.6-4-17.2c-4.4-3.3-11.4-4.2-18.1-3.2c-5.7,0.9-9.4-2.2-9.6-7c-0.2-4.7,3.3-8.8,7.9-9.2
+               c10.2-0.8,25.1-0.8,34.6,9.1c10.6,10.9,10.3,25.1,5.8,39.3c-2.4,7.4-5.9,15.3-8.4,22.2c-2.9,7.9-3.1,14.1,1.3,16.6
+               c3.5,2,9.7,1.6,13.8-2.7C121.1,151.3,115.6,158.2,109.6,164.7z" fill="white"/>
+    </svg>
+  );
 
   // Composant d'icônes SVG
   const Icons = {
@@ -62,12 +174,6 @@ const ClientHeader = ({ currentPage = 'home' }) => {
         <path d="M21 21l-4.35-4.35"/>
       </svg>
     ),
-    Settings: () => (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-      </svg>
-    ),
     BarChart: () => (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <line x1="12" y1="20" x2="12" y2="10"/>
@@ -75,9 +181,23 @@ const ClientHeader = ({ currentPage = 'home' }) => {
         <line x1="6" y1="20" x2="6" y2="16"/>
       </svg>
     ),
-    Zap: () => (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/>
+    LogOut: () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+        <polyline points="16,17 21,12 16,7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+    ),
+    User: () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    ),
+    Settings: () => (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
       </svg>
     )
   };
@@ -106,7 +226,7 @@ const ClientHeader = ({ currentPage = 'home' }) => {
     setIsFavoritesDropdownOpen(false);
   };
 
-  // Styles modernes
+  // Styles modernes (styles existants + nouveaux styles pour le dropdown)
   const styles = {
     header: {
       backgroundColor: '#ffffff',
@@ -190,20 +310,6 @@ const ClientHeader = ({ currentPage = 'home' }) => {
       alignItems: 'center',
       gap: '12px'
     },
-    adminButton: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      padding: '10px 16px',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-      border: '1px solid #e2e8f0',
-      borderRadius: '10px',
-      fontSize: '13px',
-      color: '#475569',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      fontWeight: '600'
-    },
     favoriteButton: {
       background: 'none',
       border: 'none',
@@ -238,6 +344,25 @@ const ClientHeader = ({ currentPage = 'home' }) => {
       transition: 'all 0.3s ease',
       fontWeight: '600'
     },
+    logoutButton: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '10px 16px',
+      background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)',
+      border: '1px solid #fecaca',
+      borderRadius: '10px',
+      fontSize: '13px',
+      color: '#dc2626',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      fontWeight: '600'
+    },
+    // NOUVEAU : Container pour le profil avec dropdown
+    profileContainer: {
+      position: 'relative',
+      display: 'inline-block'
+    },
     profileButton: {
       width: '44px',
       height: '44px',
@@ -252,7 +377,102 @@ const ClientHeader = ({ currentPage = 'home' }) => {
       cursor: 'pointer',
       transition: 'all 0.3s ease',
       border: '2px solid #ffffff',
-      boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)'
+      boxShadow: '0 4px 12px rgba(168, 85, 247, 0.3)',
+      userSelect: 'none'
+    },
+    // NOUVEAU : Styles pour le dropdown
+    profileDropdown: {
+      position: 'absolute',
+      top: '100%',
+      right: '0',
+      marginTop: '8px',
+      background: '#ffffff',
+      borderRadius: '12px',
+      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
+      border: '1px solid #e2e8f0',
+      minWidth: '280px',
+      overflow: 'hidden',
+      opacity: isProfileDropdownOpen ? 1 : 0,
+      visibility: isProfileDropdownOpen ? 'visible' : 'hidden',
+      transform: isProfileDropdownOpen ? 'translateY(0)' : 'translateY(-10px)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      zIndex: 1000
+    },
+    dropdownHeader: {
+      padding: '20px 20px 16px',
+      borderBottom: '1px solid #f1f5f9',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)'
+    },
+    dropdownUserInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px'
+    },
+    dropdownAvatar: {
+      width: '48px',
+      height: '48px',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: '18px'
+    },
+    dropdownUserDetails: {
+      flex: 1
+    },
+    dropdownUserName: {
+      fontSize: '16px',
+      fontWeight: '600',
+      color: '#1e293b',
+      margin: '0 0 4px 0'
+    },
+    dropdownUserEmail: {
+      fontSize: '14px',
+      color: '#64748b',
+      margin: 0
+    },
+    dropdownUserBadge: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      padding: '4px 8px',
+      background: clientInfo.est_verifie ? '#dcfce7' : '#fef3c7',
+      color: clientInfo.est_verifie ? '#166534' : '#92400e',
+      fontSize: '12px',
+      fontWeight: '500',
+      borderRadius: '6px',
+      marginTop: '4px'
+    },
+    dropdownBody: {
+      padding: '8px'
+    },
+    dropdownItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '12px 16px',
+      color: '#475569',
+      fontSize: '14px',
+      fontWeight: '500',
+      cursor: 'pointer',
+      borderRadius: '8px',
+      transition: 'all 0.2s ease',
+      border: 'none',
+      background: 'none',
+      width: '100%',
+      textAlign: 'left'
+    },
+    dropdownItemHover: {
+      background: '#f8fafc',
+      color: '#1e293b'
+    },
+    dropdownSeparator: {
+      height: '1px',
+      background: '#f1f5f9',
+      margin: '8px 16px'
     },
     badge: {
       position: 'absolute',
@@ -326,10 +546,10 @@ const ClientHeader = ({ currentPage = 'home' }) => {
             onClick={() => navigate('/')}
           >
             <div style={styles.logoIcon}>
-              <Icons.Zap />
+              <IshriliIcon />
             </div>
             <h1 style={styles.logoText}>
-              E-Commerce
+              Ishrili E-Commerce
             </h1>
           </div>
 
@@ -371,21 +591,25 @@ const ClientHeader = ({ currentPage = 'home' }) => {
 
           {/* Actions utilisateur */}
           <div style={styles.userActions}>
-            {/* Bouton Dashboard Admin */}
+            {/* Dashboard Client */}
             <button
-              onClick={() => navigate('/dashboard')}
-              style={styles.adminButton}
+              onClick={() => navigate('/client-dashboard')}
+              style={styles.dashboardButton}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
-                e.target.style.transform = 'translateY(-2px)';
+                if (currentPage !== 'dashboard') {
+                  e.target.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
+                  e.target.style.transform = 'translateY(-2px)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
-                e.target.style.transform = 'translateY(0)';
+                if (currentPage !== 'dashboard') {
+                  e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
+                  e.target.style.transform = 'translateY(0)';
+                }
               }}
             >
-              <Icons.Settings />
-              Admin
+              <Icons.BarChart />
+              Dashboard
             </button>
 
             {/* Favoris avec dropdown */}
@@ -436,43 +660,191 @@ const ClientHeader = ({ currentPage = 'home' }) => {
               </span>
             </button>
 
-            {/* Dashboard Client */}
+            {/* Bouton Déconnexion */}
             <button
-              onClick={() => navigate('/client-dashboard')}
-              style={styles.dashboardButton}
+              onClick={handleLogout}
+              style={styles.logoutButton}
               onMouseEnter={(e) => {
-                if (currentPage !== 'dashboard') {
-                  e.target.style.background = 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)';
-                  e.target.style.transform = 'translateY(-2px)';
-                }
+                e.target.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.color = '#b91c1c';
               }}
               onMouseLeave={(e) => {
-                if (currentPage !== 'dashboard') {
-                  e.target.style.background = 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';
-                  e.target.style.transform = 'translateY(0)';
-                }
+                e.target.style.background = 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.color = '#dc2626';
               }}
             >
-              <Icons.BarChart />
-              Dashboard
+              <Icons.LogOut />
+              Déconnexion
             </button>
 
-            {/* Profil */}
+            {/* NOUVEAU : Profil avec dropdown */}
             <div 
-              style={styles.profileButton}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'scale(1.08)';
-                e.target.style.background = 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)';
-                e.target.style.boxShadow = '0 6px 20px rgba(168, 85, 247, 0.4)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'scale(1)';
-                e.target.style.background = 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)';
-                e.target.style.boxShadow = '0 4px 12px rgba(168, 85, 247, 0.3)';
-              }}
-              onClick={() => navigate('/client-dashboard')}
+              style={styles.profileContainer}
+              ref={profileButtonRef}
             >
-              JD
+              <div 
+                style={styles.profileButton}
+                onMouseEnter={(e) => {
+                  if (!isProfileDropdownOpen) {
+                    e.target.style.transform = 'scale(1.08)';
+                    e.target.style.background = 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)';
+                    e.target.style.boxShadow = '0 6px 20px rgba(168, 85, 247, 0.4)';
+                    setIsProfileDropdownOpen(true);
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  // Le dropdown se fermera via l'effet useEffect
+                  setTimeout(() => {
+                    if (!profileButtonRef.current?.matches(':hover') && 
+                        !document.querySelector('[data-dropdown="profile"]:hover')) {
+                      setIsProfileDropdownOpen(false);
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.background = 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(168, 85, 247, 0.3)';
+                    }
+                  }, 100);
+                }}
+                onClick={toggleProfileDropdown}
+              >
+                {clientInfo.loading ? '...' : clientInfo.initiales}
+              </div>
+              
+              {/* NOUVEAU : Dropdown profil */}
+              <div 
+                style={styles.profileDropdown}
+                data-dropdown="profile"
+                onMouseEnter={() => setIsProfileDropdownOpen(true)}
+                onMouseLeave={() => {
+                  setTimeout(() => {
+                    setIsProfileDropdownOpen(false);
+                  }, 100);
+                }}
+              >
+                {/* Header du dropdown */}
+                <div style={styles.dropdownHeader}>
+                  <div style={styles.dropdownUserInfo}>
+                    <div style={styles.dropdownAvatar}>
+                      {clientInfo.initiales}
+                    </div>
+                    <div style={styles.dropdownUserDetails}>
+                      <h4 style={styles.dropdownUserName}>
+                        {clientInfo.nom_complet}
+                      </h4>
+                      <p style={styles.dropdownUserEmail}>
+                        {clientInfo.email || 'Client Ishrili'}
+                      </p>
+                      <span style={styles.dropdownUserBadge}>
+                        {clientInfo.est_verifie ? '✓ Vérifié' : '⏳ En attente'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Corps du dropdown */}
+                <div style={styles.dropdownBody}>
+                  <button
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/client-dashboard');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = styles.dropdownItemHover.background;
+                      e.target.style.color = styles.dropdownItemHover.color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'none';
+                      e.target.style.color = '#475569';
+                    }}
+                  >
+                    <Icons.BarChart />
+                    Mon Dashboard
+                  </button>
+
+                  <button
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/mon-profil');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = styles.dropdownItemHover.background;
+                      e.target.style.color = styles.dropdownItemHover.color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'none';
+                      e.target.style.color = '#475569';
+                    }}
+                  >
+                    <Icons.User />
+                    Mon Profil
+                  </button>
+
+                  <button
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/mes-commandes');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = styles.dropdownItemHover.background;
+                      e.target.style.color = styles.dropdownItemHover.color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'none';
+                      e.target.style.color = '#475569';
+                    }}
+                  >
+                    <Icons.FileText />
+                    Mes Commandes
+                  </button>
+
+                  <button
+                    style={styles.dropdownItem}
+                    onClick={() => {
+                      navigate('/parametres');
+                      setIsProfileDropdownOpen(false);
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = styles.dropdownItemHover.background;
+                      e.target.style.color = styles.dropdownItemHover.color;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'none';
+                      e.target.style.color = '#475569';
+                    }}
+                  >
+                    <Icons.Settings />
+                    Paramètres
+                  </button>
+
+                  <div style={styles.dropdownSeparator}></div>
+
+                  <button
+                    style={{
+                      ...styles.dropdownItem,
+                      color: '#dc2626'
+                    }}
+                    onClick={() => {
+                      setIsProfileDropdownOpen(false);
+                      handleLogout();
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#fef2f2';
+                      e.target.style.color = '#b91c1c';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = 'none';
+                      e.target.style.color = '#dc2626';
+                    }}
+                  >
+                    <Icons.LogOut />
+                    Se déconnecter
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

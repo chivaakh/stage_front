@@ -117,7 +117,7 @@ function App() {
                 =========================== */}
             
             {/* Page d'accueil client */}
-            <Route path="/" element={<ClientHomePage />} />
+            <Route path="/clientHomePage" element={<ClientHomePage />} />
             
             {/* Catalogue produits */}
             <Route path="/produits" element={<ProductsClientPage />} />
@@ -147,7 +147,7 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
             
             <Route
-              path="/choix-utilisateur"
+              path="/"
               element={<ChoixTypeUtilisateur onChoisir={(type) => {
                 console.log("Utilisateur a choisi :", type);
                 window.location.href = type === 'vendeur' ? '/dashboard' : '/produits';

@@ -242,7 +242,7 @@ const AuthPage = () => {
           // Redirection selon le type d'utilisateur
           if (userInfo.type_utilisateur === "client") {
             //  REDIRECTION CLIENT vers page client
-            window.location.href = "/client"; // ou "/shop" ou "/home-client"
+            window.location.href = "/clientHomePage"; // ou "/shop" ou "/home-client"
           } else if (userInfo.type_utilisateur === "vendeur") {
             //  LOGIQUE VENDEUR INCHANGÉE
             // Vérifier si le vendeur a un profil boutique
@@ -251,7 +251,7 @@ const AuthPage = () => {
             });
 
             if (profilRes.status === 404) {
-              window.location.href = "/creer-boutique";
+              window.location.href = "/";
             } else if (profilRes.ok) {
               window.location.href = "/dashboard";
             } else {

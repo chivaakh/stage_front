@@ -522,20 +522,20 @@ const ModernSidebar = ({ children, onAddProductClick, currentPage = 'products' }
   };
 
   const IshriliIcon = () => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="40" 
-      height="40" 
-      viewBox="0 0 200 200" 
-      fill="linear-gradient(135deg, rgb(102, 126, 234) 0%, rgb(118, 75, 162) 100%);"
-    >
-      <circle cx="100" cy="40" r="15" />
-      <path d="M109.6,164.7c-5.9,6.3-15.9,7.7-22.8,2.8c-8.3-5.9-10.7-18.6-4.4-35.3c4.7-12.6,11.6-24.9,13.5-31.8 
-               c2.2-7.9,0.7-13.6-4-17.2c-4.4-3.3-11.4-4.2-18.1-3.2c-5.7,0.9-9.4-2.2-9.6-7c-0.2-4.7,3.3-8.8,7.9-9.2
-               c10.2-0.8,25.1-0.8,34.6,9.1c10.6,10.9,10.3,25.1,5.8,39.3c-2.4,7.4-5.9,15.3-8.4,22.2c-2.9,7.9-3.1,14.1,1.3,16.6
-               c3.5,2,9.7,1.6,13.8-2.7C121.1,151.3,115.6,158.2,109.6,164.7z"/>
-    </svg>
-  );
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 200 200" 
+    fill="white"
+  >
+    <circle cx="100" cy="40" r="15" fill="white" />
+    <path d="M109.6,164.7c-5.9,6.3-15.9,7.7-22.8,2.8c-8.3-5.9-10.7-18.6-4.4-35.3c4.7-12.6,11.6-24.9,13.5-31.8 
+             c2.2-7.9,0.7-13.6-4-17.2c-4.4-3.3-11.4-4.2-18.1-3.2c-5.7,0.9-9.4-2.2-9.6-7c-0.2-4.7,3.3-8.8,7.9-9.2
+             c10.2-0.8,25.1-0.8,34.6,9.1c10.6,10.9,10.3,25.1,5.8,39.3c-2.4,7.4-5.9,15.3-8.4,22.2c-2.9,7.9-3.1,14.1,1.3,16.6
+             c3.5,2,9.7,1.6,13.8-2.7C121.1,151.3,115.6,158.2,109.6,164.7z" fill="white"/>
+  </svg>
+);
 
   return (
     <div style={sidebarStyles.container}>
@@ -543,8 +543,31 @@ const ModernSidebar = ({ children, onAddProductClick, currentPage = 'products' }
         {/* Header */}
         <div style={sidebarStyles.header}>
           <div style={sidebarStyles.logo}>
-            <IshriliIcon />
-            <h1 style={sidebarStyles.logoText}>Ishrili E-Commerce</h1>
+            {/* SVG Ishrili dans un carré coloré - couleurs cohérentes avec la page */}
+            <div style={{
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(99, 102, 241, 0.25)',
+              padding: '8px'
+            }}>
+              <IshriliIcon />
+            </div>
+            <h1 style={{
+              ...sidebarStyles.logoText,
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontSize: '18px',
+              fontWeight: '700'
+            }}>
+              Ishrili E-Commerce
+            </h1>
           </div>
           <p style={sidebarStyles.subtitle}>
             {vendeurInfo?.boutique?.nom_boutique || 'Vendor Dashboard'}
