@@ -527,7 +527,6 @@ const OrdersHistory = () => {
                   background: '#f8fafc',
                   borderRadius: theme.borderRadius.lg,
                   padding: theme.spacing.lg,
-                  paddingLeft: 70,
                   border: '1px solid #e2e8f0',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'

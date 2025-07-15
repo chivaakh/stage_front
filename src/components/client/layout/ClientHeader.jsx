@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFavoritesContext } from '../../../contexts/FavoritesContext';
 import FavoritesCounter from '../common/FavoritesCounter';
 import FavoritesDropdown from '../common/FavoritesDropdown';
+import { handleLogout } from '../../../utils/logout.js'; // 🔧 IMPORT DE LA FONCTION UNIVERSELLE
 
 const ClientHeader = ({ currentPage = 'home' }) => {
   const navigate = useNavigate();
@@ -66,21 +67,9 @@ const ClientHeader = ({ currentPage = 'home' }) => {
     }
   };
 
-  // Fonction de déconnexion
-  const handleLogout = async () => {
-    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      try {
-        await fetch('http://localhost:8000/api/logout/', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error);
-        // Rediriger quand même en cas d'erreur réseau
-        window.location.href = '/login';
-      }
-    }
+  // 🔧 FONCTION DE DÉCONNEXION SIMPLIFIÉE - UTILISE logout.js
+  const logout = () => {
+    handleLogout('/'); // Redirige vers la page d'accueil après déconnexion et nettoyage
   };
 
   // NOUVEAU : Gestion du dropdown profil
@@ -660,9 +649,9 @@ const ClientHeader = ({ currentPage = 'home' }) => {
               </span>
             </button>
 
-            {/* Bouton Déconnexion */}
+            {/* 🔧 BOUTON DÉCONNEXION SIMPLIFIÉ - UTILISE logout.js */}
             <button
-              onClick={handleLogout}
+              onClick={logout} // 🔧 UTILISE LA FONCTION UNIVERSELLE
               style={styles.logoutButton}
               onMouseEnter={(e) => {
                 e.target.style.background = 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)';
@@ -822,6 +811,7 @@ const ClientHeader = ({ currentPage = 'home' }) => {
 
                   <div style={styles.dropdownSeparator}></div>
 
+                  {/* 🔧 ITEM DE DÉCONNEXION DANS LE DROPDOWN - UTILISE logout.js */}
                   <button
                     style={{
                       ...styles.dropdownItem,
@@ -829,7 +819,7 @@ const ClientHeader = ({ currentPage = 'home' }) => {
                     }}
                     onClick={() => {
                       setIsProfileDropdownOpen(false);
-                      handleLogout();
+                      logout(); // 🔧 UTILISE LA FONCTION UNIVERSELLE
                     }}
                     onMouseEnter={(e) => {
                       e.target.style.background = '#fef2f2';

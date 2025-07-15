@@ -2,6 +2,7 @@ import React from 'react';
 import { 
   User, Store, Bell, CreditCard, Truck, Shield, Globe, Eye, HelpCircle, LogOut 
 } from 'lucide-react';
+import { handleLogout } from '../../utils/logout.js'; // 🔧 IMPORT DE LA FONCTION UNIVERSELLE
 
 const SettingsLayout = ({ children, activeSection, setActiveSection }) => {
   const settingsSections = [
@@ -16,20 +17,9 @@ const SettingsLayout = ({ children, activeSection, setActiveSection }) => {
     { id: 'help', label: 'Aide & Support', icon: HelpCircle }
   ];
 
-  const handleLogout = async () => {
-    if (window.confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-      try {
-        await fetch('http://localhost:8000/api/logout/', {
-          method: 'POST',
-          credentials: 'include'
-        });
-        window.location.href = '/login';
-      } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error);
-        // Rediriger quand même en cas d'erreur réseau
-        window.location.href = '/login';
-      }
-    }
+  // 🔧 FONCTION DE DÉCONNEXION SIMPLIFIÉE - UTILISE logout.js
+  const logout = () => {
+    handleLogout('/'); // Redirige vers la page d'accueil après déconnexion et nettoyage localStorage
   };
 
   return (
@@ -81,10 +71,10 @@ const SettingsLayout = ({ children, activeSection, setActiveSection }) => {
               </nav>
             </div>
 
-            {/* Bouton Logout en bas */}
+            {/* 🔧 BOUTON LOGOUT MODIFIÉ - UTILISE logout.js */}
             <div className="p-6 border-t border-white/20">
               <button
-                onClick={handleLogout}
+                onClick={logout} // 🔧 UTILISE LA FONCTION UNIVERSELLE
                 className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 <LogOut className="w-5 h-5 mr-3" />
